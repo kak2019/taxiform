@@ -1,0 +1,16 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": "1.15.2",
+    "libraryName": "taxi-form",
+    "libraryId": "b02d3dbe-4192-4b28-9741-d0ce73afe1be",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "taxi-form",
+    "solutionShortDescription": "taxi-form description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

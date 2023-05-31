@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "taxi-request-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/taxiRequest/TaxiRequestWebPart.js",
+          "manifest": "./src/webparts/taxiRequest/TaxiRequestWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "TaxiRequestWebPartStrings": "lib/webparts/taxiRequest/loc/{locale}.js"
+  }
+}

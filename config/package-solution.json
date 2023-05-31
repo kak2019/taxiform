@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "taxi-form-client-side-solution",
+    "id": "b02d3dbe-4192-4b28-9741-d0ce73afe1be",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.15.2"
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "taxi-form description"
+      },
+      "longDescription": {
+        "default": "taxi-form description"
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "taxi-form Feature",
+        "description": "The feature that activates elements of the taxi-form solution.",
+        "id": "992cc6b7-13d2-4efc-9155-fdf1adf2c89d",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/taxi-form.sppkg"
+  }
+}
