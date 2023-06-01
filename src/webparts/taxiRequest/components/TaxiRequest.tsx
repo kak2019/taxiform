@@ -24,31 +24,33 @@ const singleColumnProps: Partial<IStackProps> = {
   styles: { root: { width: 650 } },
 };
 
-export default class TaxiRequest extends React.Component<
-  ITaxiRequestProps,
-  {}
-> {
-  public render(): React.ReactElement<ITaxiRequestProps> {
+// export default class TaxiRequest extends React.Component<
+//   ITaxiRequestProps,
+//   {}
+// > 
+export default function TaxiRequest(){
+
+  
     return (
       <div>
         <section>
-          <h2>[RE India] - Taxi Request - New</h2>
+          <h2>[RE India] - Taxi Request - New0000044441</h2>
           <br />
           <h3>Requestor Information</h3>
         </section>
         <Stack horizontal tokens={stackTokens} styles={stackStyles}>
           <Stack {...columnProps}>
             <TextField label="Requestor Name" required />
-            <TextField label="Phone Number" prefix="+86" type="number" />
+            <TextField label="Phone Number"  type="number" />
             <Dropdown
               placeholder="Select an option"
               label="Gender"
               required
-              options={[{ key: "apple", text: "Apple" }]}
+              options={[{ key: "Male", text: "Female" }]}
             />
             <Toggle
               label="Alternate Approver"
-              defaultChecked
+              //defaultChecked
               onText="On"
               offText="Off"
               style={{ marginBottom: 4 }}
@@ -63,12 +65,14 @@ export default class TaxiRequest extends React.Component<
           <Stack {...columnProps}>
             <TextField label="Email" required readOnly />
             <TextField label="Designation" />
+            {/* 这个得是 people picker */}
             <Dropdown
               placeholder="Select an option"
               label="Manager"
               required
               options={[{ key: "apple", text: "Apple" }]}
             />
+            {/* 这个得是 people picker */}
             <Dropdown
               placeholder="Select an option"
               label="Approver"
@@ -151,4 +155,4 @@ export default class TaxiRequest extends React.Component<
       </div>
     );
   }
-}
+
