@@ -1,6 +1,5 @@
 import * as React from 'react';
 import styles from './TaxiRequest.module.scss';
-import { ITaxiRequestProps } from './ITaxiRequestProps';
 import { TextField } from '@fluentui/react/lib/TextField';
 import { Stack, IStackProps, IStackStyles } from '@fluentui/react/lib/Stack';
 import {
@@ -11,7 +10,7 @@ import {
   DayOfWeek,
   TimePicker,
 } from '@fluentui/react';
-
+import { formToServer } from '../utils/formatedValues';
 import { DefaultButton, PrimaryButton } from 'office-ui-fabric-react';
 import {
   carModelOptions,
@@ -20,7 +19,10 @@ import {
   pickupTypeOptions,
   // statusOptions,
 } from './constants';
-
+import useProfile from '../hooks/useProfile';
+import PeoplePicker from './PeoplePicker';
+import useFormControl from '../hooks/useFormControl';
+import { addRequest } from '../utils/request';
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
@@ -33,28 +35,116 @@ const singleColumnProps: Partial<IStackProps> = {
 };
 
 export default function TaxiRequest() {
+  const formRef = React.useRef();
+  const { fetchData } = useProfile();
+  const {
+    values,
+    errors,
+    setFieldsValue,
+    setFieldValue,
+    getFieldsValues,
+    validateFields,
+  } = useFormControl();
+
+  const init = async () => {
+    // EDIT TODO
+    const profile = await fetchData();
+    setFieldsValue({
+      Requestor: profile.Requestor,
+      Designation: profile.Designation,
+      Email: profile.Email,
+    });
+  };
+
+  React.useEffect(() => {
+    init()
+      .then(() => {
+        //
+      })
+      .catch(() => {
+        //
+      });
+  }, []);
+  const handleSubmit = () => {
+    console.log('submit');
+    validateFields()
+      .then(async (values) => {
+        //const request = formToServer(values);
+       //const user = await spfi(getSP()).web.siteUsers.getByEmail("group.spah.flow.mgmt@udtrucks.com")();
+       // console.log(user)
+        const request = {
+          field_3 : "AAA",
+          Requester_x002a_:11
+        }
+        console.log(request);
+
+        addRequest({ request })
+          .then(() => {
+            //
+          })
+          .catch(() => {
+            //
+          });
+      })
+      .catch(() => {
+        //
+      });
+  };
+
   return (
-    <div>
+    <form ref={formRef}>
       <section>
-        <h2>[RE India] - Taxi Request - New0000044441</h2>
+        <h2>[RE India] - Taxi Request1 - {values.ID} </h2>
         <br />
         <h3>Requestor Information</h3>
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
-          <TextField label="Requestor Name" required />
-          <TextField label="Phone Number" type="number" />
+          <TextField
+            label="Requestor Name"
+            required
+            name="Requestor"
+            value={values.Requestor as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('Requestor', v);
+            }}
+            errorMessage={errors.Requestor as string}
+          />
+          <TextField
+            label="Phone Number"
+            type="number"
+            name="Phone"
+            value={values.Phone as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('Phone', v);
+            }}
+            errorMessage={errors.Phone as string}
+          />
+
           <Dropdown
             placeholder="Select an option"
             label="Gender"
             required
             options={genderOptions}
+            // name="Gender"
+            selectedKey={[values.Gender as string].filter(Boolean)}
+            onChange={(e, option) => {
+              setFieldValue('Gender', option.key);
+            }}
+            errorMessage={errors.Gender as string}
           />
           <Toggle
             label="Alternate Approver"
             //defaultChecked
             onText="On"
             offText="Off"
+            // name="Alternate"
+            checked={values.Alternate as boolean}
+            onChange={(e, checked) => {
+              setFieldValue('Alternate', checked);
+            }}
             style={{ marginBottom: 4 }}
           />
           <Dropdown
@@ -62,26 +152,70 @@ export default function TaxiRequest() {
             label="Paymode"
             required
             options={payModeOptions}
+            selectedKey={[values.Paymode as string].filter(Boolean)}
+            onChange={(e, option) => {
+              setFieldValue('Paymode', option.key);
+            }}
+            errorMessage={errors.Paymode as string}
+            // name="Paymode"
           />
         </Stack>
         <Stack {...columnProps}>
-          <TextField label="Email" required readOnly />
-          <TextField label="Designation" />
-          {/* 这个得是 people picker */}
-          <Dropdown
-            placeholder="Select an option"
+          <TextField
+            label="Email"
+            required
+            readOnly
+            name="Email"
+            value={values.Email as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('Email', v);
+            }}
+            errorMessage={errors.Email as string}
+          />
+          <TextField
+            label="Designation"
+            name="Designation"
+            value={values.Designation as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('Designation', v);
+            }}
+            errorMessage={errors.Designation as string}
+          />
+          <PeoplePicker
+            value={values.Manager}
+            defaultValue={values.Manager}
+            onChange={(v: any) => {
+              setFieldValue('Manager', v);
+            }}
+            required
             label="Manager"
-            required
-            options={[{ key: 'apple', text: 'Apple' }]}
+            errorMessage={errors.Manager as string}
+            // name="Manager"
           />
+
           {/* 这个得是 people picker */}
-          <Dropdown
-            placeholder="Select an option"
-            label="Approver"
+          <PeoplePicker
+            value={values.Approver}
+            defaultValue={values.Approver}
+            onChange={(v: any) => {
+              setFieldValue('Approver', v);
+            }}
             required
-            options={[{ key: 'apple', text: 'Apple' }]}
+            errorMessage={errors.ApprovedBy as string}
+            // name="ApprovedBy "
+            label="Approver"
           />
-          <TextField label="Cost Center" />
+          <TextField
+            label="Cost Centre"
+            value={values.CostCentre as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('CostCentre', v);
+            }}
+            errorMessage={errors.CostCentre as string}
+          />
         </Stack>
       </Stack>
       <section>
@@ -89,14 +223,39 @@ export default function TaxiRequest() {
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
-          <TextField label="Rental City" />
+          <TextField
+            label="Rental City"
+            name="RentalCity"
+            value={values.RentalCity as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('RentalCity', v);
+            }}
+            errorMessage={errors.RentalCity as string}
+          />
           <Dropdown
             placeholder="Select an option"
-            label="Car Type"
+            label="Car Model"
             required
+            // name="CarModel"
             options={carModelOptions}
+            selectedKey={[values.CarModel as string].filter(Boolean)}
+            onChange={(e, option) => {
+              setFieldValue('CarModel', option.key);
+            }}
+            errorMessage={errors.CarModel as string}
           />
-          <TextField label="Pickup Location" required />
+          <TextField
+            label="Pickup Location"
+            required
+            name="PickupLocation"
+            value={values.PickupLocation as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('PickupLocation', v);
+            }}
+            errorMessage={errors.PickupLocation as string}
+          />
           <Stack
             styles={{ root: { width: 300 } }}
             horizontal
@@ -106,9 +265,22 @@ export default function TaxiRequest() {
               style={{ width: 200 }}
               firstDayOfWeek={DayOfWeek.Sunday}
               label="Pickerup Date"
+              // name="PickerupDate"
+              value={values.PickerupDate as Date}
+              onSelectDate={(date) => {
+                setFieldValue('PickerupDate', date);
+              }}
               strings={defaultDatePickerStrings}
             />
-            <TimePicker label="Pickerup Time" style={{ width: 200 }} />
+            <TimePicker
+              label="Pickerup Time"
+              // name="PickerupTime"
+              value={values.PickerupTime as Date}
+              onChange={(e, time) => {
+                setFieldValue('PickerupTime', time);
+              }}
+              style={{ width: 200 }}
+            />
           </Stack>
         </Stack>
         <Stack {...columnProps}>
@@ -116,10 +288,34 @@ export default function TaxiRequest() {
             placeholder="Select an option"
             label="Pickup Type"
             required
+            // name="PickupType"
             options={pickupTypeOptions}
+            selectedKey={[values.PickupType as string].filter(Boolean)}
+            onChange={(e, option) => {
+              setFieldValue('PickupType', option.key);
+            }}
+            errorMessage={errors.PickupType as string}
           />
-          <TextField label="Justification" />
-          <TextField label="Drop Location" />
+          <TextField
+            label="Justification"
+            name="Justification"
+            value={values.Justification as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('Justification', v);
+            }}
+            errorMessage={errors.Justification as string}
+          />
+          <TextField
+            label="Drop Location"
+            name="DropLocation"
+            value={values.DropLocation as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('DropLocation', v);
+            }}
+            errorMessage={errors.DropLocation as string}
+          />
           <Stack
             styles={{ root: { width: 300 } }}
             horizontal
@@ -129,15 +325,37 @@ export default function TaxiRequest() {
               style={{ width: 200 }}
               firstDayOfWeek={DayOfWeek.Sunday}
               label="Drop Date"
+              value={values.DropDate as Date}
+              onSelectDate={(date) => {
+                setFieldValue('DropDate', date);
+              }}
+              // name="DropDate"
               strings={defaultDatePickerStrings}
             />
-            <TimePicker label="Drop Time" style={{ width: 200 }} />
+            <TimePicker
+              label="Drop Time"
+              style={{ width: 200 }}
+              value={values.DropTime as Date}
+              onChange={(e, time) => {
+                setFieldValue('DropTime', time);
+              }}
+            />
           </Stack>
         </Stack>
       </Stack>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...singleColumnProps}>
-          <TextField label="Additional Instruction" multiline />
+          <TextField
+            label="Additional Instruction"
+            multiline
+            name="AdditionalInstructions"
+            value={values.AdditionalInstructions as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('AdditionalInstructions', v);
+            }}
+            errorMessage={errors.AdditionalInstructions as string}
+          />
         </Stack>
       </Stack>
 
@@ -151,9 +369,10 @@ export default function TaxiRequest() {
           text="Submit"
           allowDisabledFocus
           style={{ marginRight: 24 }}
+          onClick={handleSubmit}
         />
         <DefaultButton text="Cancel" allowDisabledFocus />
       </Stack>
-    </div>
+    </form>
   );
 }

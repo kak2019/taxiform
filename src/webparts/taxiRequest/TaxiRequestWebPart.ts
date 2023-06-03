@@ -11,6 +11,8 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import * as strings from 'TaxiRequestWebPartStrings';
 import TaxiRequest from './components/TaxiRequest';
 import { ITaxiRequestProps } from './components/ITaxiRequestProps';
+import { getSP } from './pnpjsConfig';
+
 
 export interface ITaxiRequestWebPartProps {
   description: string;
@@ -20,6 +22,9 @@ export default class TaxiRequestWebPart extends BaseClientSideWebPart<ITaxiReque
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
+
+ 
+ 
 
   public render(): void {
     const element: React.ReactElement<ITaxiRequestProps> = React.createElement(
@@ -38,7 +43,7 @@ export default class TaxiRequestWebPart extends BaseClientSideWebPart<ITaxiReque
 
   protected onInit(): Promise<void> {
     this._environmentMessage = this._getEnvironmentMessage();
-
+    getSP(this.context);
     return super.onInit();
   }
 
