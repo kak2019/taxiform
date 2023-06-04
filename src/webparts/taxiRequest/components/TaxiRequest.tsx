@@ -23,6 +23,13 @@ import useProfile from '../hooks/useProfile';
 import PeoplePicker from './PeoplePicker';
 import useFormControl from '../hooks/useFormControl';
 import { addRequest } from '../utils/request';
+import { IWebEnsureUserResult } from '@pnp/sp/site-users/types';
+import { spfi } from '@pnp/sp';
+import { getSP } from '../pnpjsConfig';
+import "@pnp/sp/webs";
+import "@pnp/sp/site-users/web";
+import { Field } from '@pnp/sp/fields/types';
+import * as dayjs from 'dayjs';
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
@@ -66,18 +73,65 @@ export default function TaxiRequest() {
       });
   }, []);
   const handleSubmit = () => {
+    const sp = spfi(getSP());
     console.log('submit');
     validateFields()
       .then(async (values) => {
         //const request = formToServer(values);
-       //const user = await spfi(getSP()).web.siteUsers.getByEmail("group.spah.flow.mgmt@udtrucks.com")();
-       // console.log(user)
-        const request = {
-          field_3 : "AAA",
-          Requester_x002a_:11
+        //const user = await spfi(getSP()).web.siteUsers.getByEmail("group.spah.flow.mgmt@udtrucks.com")();
+        // console.log(user)
+        //console.log(values.Manager)
+        const result: IWebEnsureUserResult = await sp.web.ensureUser("i:0#.f|membership|" + values.Email);
+        const resultManager: IWebEnsureUserResult = await sp.web.ensureUser(values.Manager.LoginName);
+
+       
+        const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
+        console.log(values.PickerupDate)
+        console.log(values.PickerupTime)
+        //console.log(resultApprover)
+        //假设有Approver
+        let request = {
+          field_3: values.Email,
+          Requester_x002a_Id: result.data.Id,
+          //
+          //Phone
+          field_4: values.Phone,
+          //Gender
+          field_6: values.Gender,
+          //AlternateApprover
+          AlternateApprover: values.Alternate,
+          //Paymode
+          field_16: values.Paymode,
+          //Email
+          //Designation
+          field_5: values.Designation,
+          ManagerId: resultManager.data.Id,
+          ApproverId: resultApprover.data.Id,
+          //CostCentre
+          field_15: values.CostCentre,
+          //RentalCity
+          field_8: values.RentalCity,
+          //CarModel
+          field_10: values.CarModel,
+          //PickupLocation
+          field_12: values.PickupLocation,
+           //PickerupDate + time
+          field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD')+"T"+dayjs(values.PickerupTime).format('HH:mm:ss')+"Z",
+          //PickerupTime: undefined, 页面是两个 需要提交到一个框
+          //PickupType
+          field_9: values.PickupType,
+          //Justification
+          field_11: values.Justification,
+          //DropLocation
+          field_18: values.DropLocation,
+          //DropDate + DropTime
+          field_14: dayjs(values.DropDate).format('YYYY-MM-DD')+"T"+dayjs(values.DropTime).format('HH:mm:ss')+"Z",
+          //DropTime: undefined,
+          //AdditionalInstructions
+          field_20: values.AdditionalInstructions, 
         }
         console.log(request);
-
+        //if(resultApprover!==undefined){request[ApprovedById]= resultApprover.data.Id }
         addRequest({ request })
           .then(() => {
             //
@@ -94,7 +148,7 @@ export default function TaxiRequest() {
   return (
     <form ref={formRef}>
       <section>
-        <h2>[RE India] - Taxi Request1 - {values.ID} </h2>
+        <h2>[RE India] - Taxi Request - {values.ID} </h2>
         <br />
         <h3>Requestor Information</h3>
       </section>
@@ -157,7 +211,7 @@ export default function TaxiRequest() {
               setFieldValue('Paymode', option.key);
             }}
             errorMessage={errors.Paymode as string}
-            // name="Paymode"
+          // name="Paymode"
           />
         </Stack>
         <Stack {...columnProps}>
@@ -192,7 +246,7 @@ export default function TaxiRequest() {
             required
             label="Manager"
             errorMessage={errors.Manager as string}
-            // name="Manager"
+          // name="Manager"
           />
 
           {/* 这个得是 people picker */}
