@@ -47,6 +47,8 @@ function createInitForm(): Record<string, any> {
     //DropTime: undefined,
     //AdditionalInstructions
     field_20: undefined,
+    PickerupTime: new Date(),
+    DropTime: new Date()
   };
 }
 

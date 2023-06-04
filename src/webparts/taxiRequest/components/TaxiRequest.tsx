@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styles from './TaxiRequest.module.scss';
 import { TextField } from '@fluentui/react/lib/TextField';
+import { MessageBar, MessageBarType } from '@fluentui/react';
 import { Stack, IStackProps, IStackStyles } from '@fluentui/react/lib/Stack';
 import {
   Dropdown,
@@ -22,7 +23,7 @@ import {
 import useProfile from '../hooks/useProfile';
 import PeoplePicker from './PeoplePicker';
 import useFormControl from '../hooks/useFormControl';
-import { addRequest } from '../utils/request';
+import { addRequest, fetchById } from '../utils/request';
 import { IWebEnsureUserResult } from '@pnp/sp/site-users/types';
 import { spfi } from '@pnp/sp';
 import { getSP } from '../pnpjsConfig';
@@ -30,6 +31,9 @@ import "@pnp/sp/webs";
 import "@pnp/sp/site-users/web";
 import { Field } from '@pnp/sp/fields/types';
 import * as dayjs from 'dayjs';
+import { useUrlQueryParam } from '../hooks/useUrlQueryParam'
+import { ISiteUser } from "@pnp/sp/site-users/";
+
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
@@ -43,6 +47,7 @@ const singleColumnProps: Partial<IStackProps> = {
 
 export default function TaxiRequest() {
   const formRef = React.useRef();
+  const [{id}] = useUrlQueryParam(['id'])
   const { fetchData } = useProfile();
   const {
     values,
@@ -52,31 +57,71 @@ export default function TaxiRequest() {
     getFieldsValues,
     validateFields,
   } = useFormControl();
+  const [showAlert, toggleShowAlert] = React.useState(false);
 
   const init = async () => {
     // EDIT TODO
-    const profile = await fetchData();
+    const profile:any = await fetchById({Id: Number(id)});
+    if(typeof profile === 'string') {
+      throw console.log(profile)
+    }
+    console.log(profile)
+    const sp = spfi(getSP());
+    const requestor: ISiteUser = sp.web.getUserById(profile.Requester_x002a_Id);
+    const requestorData = await requestor.select("Title")();
+
+    const manager: ISiteUser = sp.web.getUserById(profile.ManagerId);
+    const managerData = await manager();
+
     setFieldsValue({
-      Requestor: profile.Requestor,
-      Designation: profile.Designation,
-      Email: profile.Email,
-    });
+      Requestor: requestorData.Title,
+      Email: profile.field_3,
+      Phone: profile.field_4,
+      Gender: profile.field_6,
+      Alternate: profile.AlternateApprover,
+      Paymode: profile.field_16,
+      Designation: profile.field_5,
+      CostCentre: profile.field_15,
+      RentalCity: profile.field_8,
+      CarModel: profile.field_10,
+      PickupLocation: profile.field_12,
+      PickerupDate: profile.field_13 ? new Date(profile.field_13.replace('Z', '')) : '',
+      PickerupTime: profile.field_13 ? new Date(profile.field_13.replace('Z', '')) : '',
+      PickupType: profile.field_9,
+      Justification: profile.field_11,
+      DropLocation: profile.field_18,
+      DropDate: profile.field_14 ? new Date(profile.field_14.replace('Z', '')) : '',
+      DropTime: profile.field_14 ? new Date(profile.field_14.replace('Z', '')) : '',
+      AdditionalInstructions: profile.field_20,
+      Approver: profile.ApproverId,
+      Manager: {
+        LoginName: managerData.LoginName
+      },
+      ManagerId: profile.ManagerId
+    })
   };
 
   React.useEffect(() => {
-    init()
-      .then(() => {
-        //
-      })
-      .catch(() => {
-        //
-      });
+    void init()
   }, []);
   const handleSubmit = () => {
     const sp = spfi(getSP());
     console.log('submit');
     validateFields()
       .then(async (values) => {
+        // validate date & time
+        const dropDateTime = dayjs( dayjs(values.DropDate).format('YYYY/MM/DD') + ' ' + dayjs(values.DropTime).format('HH:mm'))
+        const pickerupDateTime = dayjs( dayjs(values.PickerupDate).format('YYYY/MM/DD') + ' ' + dayjs(values.PickerupTime).format('HH:mm'))
+        const now = dayjs()
+        const diffHoursDrop =  Math.abs(dayjs(dropDateTime).diff(dayjs(now), 'hour'));
+        const dffHoursPickerup = Math.abs(dayjs(pickerupDateTime).diff(dayjs(now), 'hour'));
+        debugger
+
+        if(diffHoursDrop > 3 || dffHoursPickerup > 3) {
+          return toggleShowAlert(true)
+        } else {
+          toggleShowAlert(false)
+        }
         //const request = formToServer(values);
         //const user = await spfi(getSP()).web.siteUsers.getByEmail("group.spah.flow.mgmt@udtrucks.com")();
         // console.log(user)
@@ -238,7 +283,6 @@ export default function TaxiRequest() {
             errorMessage={errors.Designation as string}
           />
           <PeoplePicker
-            value={values.Manager}
             defaultValue={values.Manager}
             onChange={(v: any) => {
               setFieldValue('Manager', v);
@@ -328,11 +372,11 @@ export default function TaxiRequest() {
             />
             <TimePicker
               label="Pickerup Time"
-              // name="PickerupTime"
+              allowFreeform
               value={values.PickerupTime as Date}
-              onChange={(e, time) => {
+              onChange={React.useCallback((e, time) => {
                 setFieldValue('PickerupTime', time);
-              }}
+              }, [])}
               style={{ width: 200 }}
             />
           </Stack>
@@ -419,6 +463,18 @@ export default function TaxiRequest() {
         style={{ paddingRight: 100, marginTop: 40, marginBottom: 20 }}
         horizontal
       >
+
+        {showAlert && (
+          <MessageBar
+            delayedRender={false}
+            // Setting this to error, blocked, or severeWarning automatically sets the role to "alert"
+            messageBarType={MessageBarType.error}
+            // Or you could set the role manually, IF an alert role is appropriate for the message
+            // role="alert"
+          >
+            时间不在3小时以内
+          </MessageBar>
+        )}
         <PrimaryButton
           text="Submit"
           allowDisabledFocus

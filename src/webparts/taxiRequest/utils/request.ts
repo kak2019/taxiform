@@ -47,4 +47,4 @@ const addRequest = async (arg: {
   return result2;
 };
 
-export { addRequest, editRequest };
+export { addRequest, editRequest, fetchById };

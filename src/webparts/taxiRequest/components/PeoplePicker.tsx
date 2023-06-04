@@ -9,7 +9,7 @@ import { Label } from '@fluentui/react';
 interface IPeoplePickerProps {
   defaultValue?: any;
   defaultText?: any;
-  value: any;
+  value?: any;
   onChange: any;
   required?: boolean;
   label?: string;
