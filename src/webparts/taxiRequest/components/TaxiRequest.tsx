@@ -23,7 +23,7 @@ import {
 import useProfile from '../hooks/useProfile';
 import PeoplePicker from './PeoplePicker';
 import useFormControl from '../hooks/useFormControl';
-import { addRequest, fetchById } from '../utils/request';
+import { addRequest, editRequest, fetchById } from '../utils/request';
 import { IWebEnsureUserResult } from '@pnp/sp/site-users/types';
 import { spfi } from '@pnp/sp';
 import { getSP } from '../pnpjsConfig';
@@ -33,7 +33,7 @@ import { Field } from '@pnp/sp/fields/types';
 import * as dayjs from 'dayjs';
 import { useUrlQueryParam } from '../hooks/useUrlQueryParam'
 import { ISiteUser } from "@pnp/sp/site-users/";
-
+import TaxiRequestNew from './TaxiRequestNew'
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
@@ -47,7 +47,7 @@ const singleColumnProps: Partial<IStackProps> = {
 
 export default function TaxiRequest() {
   const formRef = React.useRef();
-  const [{id}] = useUrlQueryParam(['id'])
+  const [{ ID }] = useUrlQueryParam(['ID'])
   const { fetchData } = useProfile();
   const {
     values,
@@ -58,11 +58,13 @@ export default function TaxiRequest() {
     validateFields,
   } = useFormControl();
   const [showAlert, toggleShowAlert] = React.useState(false);
-
+  const [alternateValue, setalternateValue] = React.useState(false);
+  const [justificationRequired,setjustificationRequired] = React.useState(false);
   const init = async () => {
     // EDIT TODO
-    const profile:any = await fetchById({Id: Number(id)});
-    if(typeof profile === 'string') {
+    console.log(ID)
+    const profile: any = await fetchById({ Id: Number(ID) });
+    if (typeof profile === 'string') {
       throw console.log(profile)
     }
     console.log(profile)
@@ -80,8 +82,8 @@ export default function TaxiRequest() {
       Email: profile.field_3,
       Phone: profile.field_4,
       Gender: profile.field_6,
-      Alternate: profile.AlternateApprover,
-      Paymode: profile.field_16,
+      AlternateApprover: profile.AlternateApprover,
+      Paymode: profile.field_16 ? profile.field_16 : "BilltoCompany",
       Designation: profile.field_5,
       CostCentre: profile.field_15,
       RentalCity: profile.field_8,
@@ -98,9 +100,12 @@ export default function TaxiRequest() {
       //Approver: profile.ApproverId,
       Manager: managerData,
       ManagerId: profile.ManagerId,
-      Approver:ApproverData,
-      ApproverId:profile.ApproverId
-    })
+      Approver: ApproverData,
+      ApproverId: profile.ApproverId
+    });
+    setalternateValue(profile.AlternateApprover);
+    if(profile.field_10==='innova crysta' || profile.field_10==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
+    
   };
 
   React.useEffect(() => {
@@ -112,17 +117,22 @@ export default function TaxiRequest() {
     validateFields()
       .then(async (values) => {
         // validate date & time
-        const dropDateTime = dayjs( dayjs(values.DropDate).format('YYYY/MM/DD') + ' ' + dayjs(values.DropTime).format('HH:mm'))
-        const pickerupDateTime = dayjs( dayjs(values.PickerupDate).format('YYYY/MM/DD') + ' ' + dayjs(values.PickerupTime).format('HH:mm'))
+        const dropDateTime = dayjs(dayjs(values.DropDate).format('YYYY/MM/DD') + ' ' + dayjs(values.DropTime).format('HH:mm'))
+        const pickerupDateTime = dayjs(dayjs(values.PickerupDate).format('YYYY/MM/DD') + ' ' + dayjs(values.PickerupTime).format('HH:mm'))
         const now = dayjs()
-        const diffHoursDrop =  Math.abs(dayjs(dropDateTime).diff(dayjs(now), 'hour'));
+        const diffHoursDrop = Math.abs(dayjs(dropDateTime).diff(dayjs(now), 'hour'));
         const dffHoursPickerup = Math.abs(dayjs(pickerupDateTime).diff(dayjs(now), 'hour'));
-        debugger
+        const vaildpickupbefore = dayjs(pickerupDateTime).isBefore(dayjs(now));
+        const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
 
-        if(diffHoursDrop > 3 || dffHoursPickerup > 3) {
-          return toggleShowAlert(true)
-        } else {
-          toggleShowAlert(false)
+
+        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && (diffHoursDrop > 3 || dffHoursPickerup > 3))) {
+          return toggleShowAlert(false)
+        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && (diffHoursDrop > 24 || dffHoursPickerup > 24))) {
+          return toggleShowAlert(false)
+        }
+        else {
+          toggleShowAlert(true)
         }
         //const request = formToServer(values);
         //const user = await spfi(getSP()).web.siteUsers.getByEmail("group.spah.flow.mgmt@udtrucks.com")();
@@ -131,55 +141,102 @@ export default function TaxiRequest() {
         const result: IWebEnsureUserResult = await sp.web.ensureUser("i:0#.f|membership|" + values.Email);
         const resultManager: IWebEnsureUserResult = await sp.web.ensureUser(values.Manager.LoginName);
 
-       
+
         const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
         console.log(values.PickerupDate)
         console.log(values.PickerupTime)
         //console.log(resultApprover)
         //假设有Approver
-        let request = {
-          field_3: values.Email,
-          Requester_x002a_Id: result.data.Id,
-          //
-          //Phone
-          field_4: values.Phone,
-          //Gender
-          field_6: values.Gender,
-          //AlternateApprover
-          AlternateApprover: values.Alternate,
-          //Paymode
-          field_16: values.Paymode,
-          //Email
-          //Designation
-          field_5: values.Designation,
-          ManagerId: resultManager.data.Id,
-          ApproverId: resultApprover.data.Id,
-          //CostCentre
-          field_15: values.CostCentre,
-          //RentalCity
-          field_8: values.RentalCity,
-          //CarModel
-          field_10: values.CarModel,
-          //PickupLocation
-          field_12: values.PickupLocation,
-           //PickerupDate + time
-          field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD')+"T"+dayjs(values.PickerupTime).format('HH:mm:ss')+"Z",
-          //PickerupTime: undefined, 页面是两个 需要提交到一个框
-          //PickupType
-          field_9: values.PickupType,
-          //Justification
-          field_11: values.Justification,
-          //DropLocation
-          field_18: values.DropLocation,
-          //DropDate + DropTime
-          field_14: dayjs(values.DropDate).format('YYYY-MM-DD')+"T"+dayjs(values.DropTime).format('HH:mm:ss')+"Z",
-          //DropTime: undefined,
-          //AdditionalInstructions
-          field_20: values.AdditionalInstructions, 
+        let request = {};
+        if (alternateValue) {
+          request = {
+            ID:ID,
+            field_3: values.Email,
+            Requester_x002a_Id: result.data.Id,
+            //
+            //Phone
+            field_4: values.Phone,
+            //Gender
+            field_6: values.Gender,
+            //AlternateApprover
+            AlternateApprover: values.Alternate,
+            //Paymode
+            field_16: values.Paymode,
+            //Email
+            //Designation
+            field_5: values.Designation,
+            ManagerId: resultManager.data.Id,
+            ApproverId: resultApprover.data.Id,
+            //CostCentre
+            field_15: values.CostCentre,
+            //RentalCity
+            field_8: values.RentalCity,
+            //CarModel
+            field_10: values.CarModel,
+            //PickupLocation
+            field_12: values.PickupLocation,
+            //PickerupDate + time
+            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss') + "Z",
+            //PickerupTime: undefined, 页面是两个 需要提交到一个框
+            //PickupType
+            field_9: values.PickupType,
+            //Justification
+            field_11: values.Justification,
+            //DropLocation
+            field_18: values.DropLocation,
+            //DropDate + DropTime
+            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss') + "Z",
+            //DropTime: undefined,
+            //AdditionalInstructions
+            field_20: values.AdditionalInstructions,
+          }
+        } else {
+          request = {
+            ID:ID,
+            field_3: values.Email,
+            Requester_x002a_Id: result.data.Id,
+            //
+            //Phone
+            field_4: values.Phone,
+            //Gender
+            field_6: values.Gender,
+            //AlternateApprover
+            AlternateApprover: values.Alternate,
+            //Paymode
+            field_16: values.Paymode,
+            //Email
+            //Designation
+            field_5: values.Designation,
+            ManagerId: resultManager.data.Id,
+            //ApproverId: resultApprover.data.Id,
+            //CostCentre
+            field_15: values.CostCentre,
+            //RentalCity
+            field_8: values.RentalCity,
+            //CarModel
+            field_10: values.CarModel,
+            //PickupLocation
+            field_12: values.PickupLocation,
+            //PickerupDate + time
+            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss') + "Z",
+            //PickerupTime: undefined, 页面是两个 需要提交到一个框
+            //PickupType
+            field_9: values.PickupType,
+            //Justification
+            field_11: values.Justification,
+            //DropLocation
+            field_18: values.DropLocation,
+            //DropDate + DropTime
+            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss') + "Z",
+            //DropTime: undefined,
+            //AdditionalInstructions
+            field_20: values.AdditionalInstructions,
+          }
         }
         console.log(request);
+        console.log('submit');
         //if(resultApprover!==undefined){request[ApprovedById]= resultApprover.data.Id }
-        addRequest({ request })
+        editRequest({ request })
           .then(() => {
             //
           })
@@ -242,9 +299,11 @@ export default function TaxiRequest() {
             onText="On"
             offText="Off"
             // name="Alternate"
-            checked={values.Alternate as boolean}
+            //checked={values.AlternateApprover as boolean}
+            checked={alternateValue}
             onChange={(e, checked) => {
-              setFieldValue('Alternate', checked);
+              setFieldValue('AlternateApprover', checked);
+              setalternateValue(checked);
             }}
             style={{ marginBottom: 4 }}
           />
@@ -252,6 +311,7 @@ export default function TaxiRequest() {
             placeholder="Select an option"
             label="Paymode"
             required
+            //defaultSelectedKey="BilltoCompany"
             options={payModeOptions}
             selectedKey={[values.Paymode as string].filter(Boolean)}
             onChange={(e, option) => {
@@ -305,10 +365,11 @@ export default function TaxiRequest() {
             onChange={(v: any) => {
               setFieldValue('Approver', v);
             }}
-            required
+            //required
             errorMessage={errors.Approved as string}
             // name="ApprovedBy "
             label="Approver"
+            required={alternateValue}
           />
           <TextField
             label="Cost Centre"
@@ -326,25 +387,29 @@ export default function TaxiRequest() {
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
-          <TextField
-            label="Rental City"
-            name="RentalCity"
-            value={values.RentalCity as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('RentalCity', v);
+          
+          <Dropdown
+            placeholder="Select an option"
+            label="Pickup Type"
+            required
+            // name="PickupType"
+            options={pickupTypeOptions}
+            selectedKey={[values.PickupType as string].filter(Boolean)}
+            onChange={(e, option) => {
+              setFieldValue('PickupType', option.key);
             }}
-            errorMessage={errors.RentalCity as string}
+            errorMessage={errors.PickupType as string}
           />
           <Dropdown
             placeholder="Select an option"
-            label="Car Model"
+            label="Car Type"
             required
             // name="CarModel"
             options={carModelOptions}
             selectedKey={[values.CarModel as string].filter(Boolean)}
             onChange={(e, option) => {
               setFieldValue('CarModel', option.key);
+              if(option.key==='innova crysta' || option.key==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
             }}
             errorMessage={errors.CarModel as string}
           />
@@ -387,22 +452,21 @@ export default function TaxiRequest() {
           </Stack>
         </Stack>
         <Stack {...columnProps}>
-          <Dropdown
-            placeholder="Select an option"
-            label="Pickup Type"
-            required
-            // name="PickupType"
-            options={pickupTypeOptions}
-            selectedKey={[values.PickupType as string].filter(Boolean)}
-            onChange={(e, option) => {
-              setFieldValue('PickupType', option.key);
+        <TextField
+            label="Rental City"
+            name="RentalCity"
+            value={values.RentalCity as string}
+            onChange={(e) => {
+              const v = (e.target as HTMLInputElement).value;
+              setFieldValue('RentalCity', v);
             }}
-            errorMessage={errors.PickupType as string}
+            errorMessage={errors.RentalCity as string}
           />
           <TextField
             label="Justification"
             name="Justification"
             value={values.Justification as string}
+            required={justificationRequired}
             onChange={(e) => {
               const v = (e.target as HTMLInputElement).value;
               setFieldValue('Justification', v);
@@ -474,10 +538,10 @@ export default function TaxiRequest() {
             delayedRender={false}
             // Setting this to error, blocked, or severeWarning automatically sets the role to "alert"
             messageBarType={MessageBarType.error}
-            // Or you could set the role manually, IF an alert role is appropriate for the message
-            // role="alert"
+          // Or you could set the role manually, IF an alert role is appropriate for the message
+          // role="alert"
           >
-            时间不在3小时以内
+            please check Pickup date & time and Drop Date & time
           </MessageBar>
         )}
         <PrimaryButton

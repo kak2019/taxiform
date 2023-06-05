@@ -101,6 +101,7 @@ const PeoplePicker = class PeoplePickerClass extends React.Component<
           onChange={this.onPersonSelected}
           onResolveSuggestions={(text) => this.filterItems(text)}
           defaultSelectedItems={this.state.preselectedItems}
+          disabled={!this.props.required}
         />
 
         {this.props.errorMessage ? (

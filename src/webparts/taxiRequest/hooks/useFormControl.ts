@@ -107,6 +107,9 @@ function useFormControl() {
     if (isEmpty(values.PickupLocation)) {
       _errors['PickupLocation'] = 'Required';
     }
+    if(isEmpty(values.Justification)&&(values.CarModel==='innova crysta' || values.CarModel==='premium cars')){
+      _errors['Justification'] = 'Required';
+    }
 
     setErrors(_errors);
     const hasErrors = Object.keys(_errors).length > 0;

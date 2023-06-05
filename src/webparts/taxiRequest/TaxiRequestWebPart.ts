@@ -12,8 +12,10 @@ import * as strings from 'TaxiRequestWebPartStrings';
 import TaxiRequest from './components/TaxiRequest';
 import { ITaxiRequestProps } from './components/ITaxiRequestProps';
 import { getSP } from './pnpjsConfig';
-
-
+import TaxiRequestNew from './components/TaxiRequestNew';
+import { useUrlQueryParam } from '../../webparts/taxiRequest/hooks/useUrlQueryParam'
+import App from './components/App';
+import TaxiRequestMain from './components/TaxiRequestMain';
 export interface ITaxiRequestWebPartProps {
   description: string;
 }
@@ -22,13 +24,14 @@ export default class TaxiRequestWebPart extends BaseClientSideWebPart<ITaxiReque
 
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
-
+  
  
  
 
   public render(): void {
+  
     const element: React.ReactElement<ITaxiRequestProps> = React.createElement(
-      TaxiRequest,
+     TaxiRequestMain,
       {
         description: this.properties.description,
         isDarkTheme: this._isDarkTheme,
@@ -37,10 +40,19 @@ export default class TaxiRequestWebPart extends BaseClientSideWebPart<ITaxiReque
         userDisplayName: this.context.pageContext.user.displayName
       }
     );
-
+    // const element1: React.ReactElement<ITaxiRequestProps> = React.createElement(
+    //   TaxiRequestNew,
+    //   {
+    //     description: this.properties.description,
+    //     isDarkTheme: this._isDarkTheme,
+    //     environmentMessage: this._environmentMessage,
+    //     hasTeamsContext: !!this.context.sdks.microsoftTeams,
+    //     userDisplayName: this.context.pageContext.user.displayName
+    //   }
+    // );
+    
     ReactDom.render(element, this.domElement);
-  }
-
+    }
   protected onInit(): Promise<void> {
     this._environmentMessage = this._getEnvironmentMessage();
     getSP(this.context);
