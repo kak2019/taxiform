@@ -113,9 +113,9 @@ function useFormControl() {
 
     setErrors(_errors);
     const hasErrors = Object.keys(_errors).length > 0;
-    // if (hasErrors) {
-    //   return Promise.reject(new Error(_errors));
-    // }
+    if (hasErrors) {
+      return Promise.reject(new Error(_errors));
+    }
     return Promise.resolve(values);
   };
 

@@ -37,11 +37,11 @@ import TaxiRequestNew from './TaxiRequestNew'
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
-  tokens: { childrenGap: 15 },
+  tokens: { childrenGap: 0 },
   styles: { root: { width: 300 } },
 };
 const singleColumnProps: Partial<IStackProps> = {
-  tokens: { childrenGap: 15 },
+  tokens: { childrenGap: 0 },
   styles: { root: { width: 650 } },
 };
 
@@ -126,9 +126,9 @@ export default function TaxiRequest() {
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
 
 
-        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && (diffHoursDrop > 3 || dffHoursPickerup > 3))) {
+        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop > 3 && dffHoursPickerup > 3)) {
           return toggleShowAlert(false)
-        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && (diffHoursDrop > 24 || dffHoursPickerup > 24))) {
+        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop > 24 && dffHoursPickerup > 24)) {
           return toggleShowAlert(false)
         }
         else {
@@ -258,82 +258,94 @@ export default function TaxiRequest() {
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
-          <TextField
-            label="Requestor Name"
-            required
-            name="Requestor"
-            value={values.Requestor as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('Requestor', v);
-            }}
-            errorMessage={errors.Requestor as string}
-          />
-          <TextField
-            label="Phone Number"
-            type="number"
-            name="Phone"
-            value={values.Phone as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('Phone', v);
-            }}
-            errorMessage={errors.Phone as string}
-          />
-
-          <Dropdown
-            placeholder="Select an option"
-            label="Gender"
-            required
-            options={genderOptions}
-            // name="Gender"
-            selectedKey={[values.Gender as string].filter(Boolean)}
-            onChange={(e, option) => {
-              setFieldValue('Gender', option.key);
-            }}
-            errorMessage={errors.Gender as string}
-          />
-          <Toggle
-            label="Alternate Approver"
-            //defaultChecked
-            onText="On"
-            offText="Off"
-            // name="Alternate"
-            //checked={values.AlternateApprover as boolean}
-            checked={alternateValue}
-            onChange={(e, checked) => {
-              setFieldValue('AlternateApprover', checked);
-              setalternateValue(checked);
-            }}
-            style={{ marginBottom: 4 }}
-          />
-          <Dropdown
-            placeholder="Select an option"
-            label="Paymode"
-            required
-            //defaultSelectedKey="BilltoCompany"
-            options={payModeOptions}
-            selectedKey={[values.Paymode as string].filter(Boolean)}
-            onChange={(e, option) => {
-              setFieldValue('Paymode', option.key);
-            }}
-            errorMessage={errors.Paymode as string}
-          // name="Paymode"
-          />
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Requestor Name"
+              required
+              name="Requestor"
+              value={values.Requestor as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('Requestor', v);
+              }}
+              errorMessage={errors.Requestor as string}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Phone Number"
+              type="number"
+              name="Phone"
+              value={values.Phone as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('Phone', v);
+              }}
+              errorMessage={errors.Phone as string}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <Dropdown
+              placeholder="Select an option"
+              label="Gender"
+              required
+              options={genderOptions}
+              // name="Gender"
+              selectedKey={[values.Gender as string].filter(Boolean)}
+              onChange={(e, option) => {
+                setFieldValue('Gender', option.key);
+              }}
+              errorMessage={errors.Gender as string}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <Toggle
+              label="Alternate Approver"
+              //defaultChecked
+              onText="On"
+              offText="Off"
+              // name="Alternate"
+              //checked={values.AlternateApprover as boolean}
+              checked={alternateValue}
+              onChange={(e, checked) => {
+                setFieldValue('AlternateApprover', checked);
+                setalternateValue(checked);
+              }}
+              style={{ marginBottom: 4 }}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <Dropdown
+              placeholder="Select an option"
+              label="Paymode"
+              required
+              //defaultSelectedKey="BilltoCompany"
+              options={payModeOptions}
+              selectedKey={[values.Paymode as string].filter(Boolean)}
+              onChange={(e, option) => {
+                setFieldValue('Paymode', option.key);
+              }}
+              errorMessage={errors.Paymode as string}
+            // name="Paymode"
+            />
+          </div>
         </Stack>
         <Stack {...columnProps}>
-          <TextField
-            label="Email"
-            required
-            readOnly
-            name="Email"
-            value={values.Email as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('Email', v);
-            }}
-            errorMessage={errors.Email as string}
-          />
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Email"
+              required
+              readOnly
+              name="Email"
+              value={values.Email as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('Email', v);
+              }}
+              errorMessage={errors.Email as string}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
           <TextField
             label="Designation"
             name="Designation"
@@ -344,6 +356,8 @@ export default function TaxiRequest() {
             }}
             errorMessage={errors.Designation as string}
           />
+          </div>
+          <div className={styles.columnMaxHeight}>
           <PeoplePicker
             key={values.ManagerId}
             defaultValue={values.ManagerId}
@@ -356,8 +370,10 @@ export default function TaxiRequest() {
             errorMessage={errors.Manager as string}
           // name="Manager"
           />
-
+          </div>
+            
           {/* 这个得是 people picker */}
+          <div className={styles.columnMaxHeight}>
           <PeoplePicker
             key={values.ApproverId}
             defaultValue={values.ApproverId}
@@ -371,15 +387,18 @@ export default function TaxiRequest() {
             label="Approver"
             required={alternateValue}
           />
-          <TextField
-            label="Cost Centre"
-            value={values.CostCentre as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('CostCentre', v);
-            }}
-            errorMessage={errors.CostCentre as string}
-          />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Cost Centre"
+              value={values.CostCentre as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('CostCentre', v);
+              }}
+              errorMessage={errors.CostCentre as string}
+            />
+          </div>
         </Stack>
       </Stack>
       <section>
@@ -387,7 +406,7 @@ export default function TaxiRequest() {
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
-          
+        <div className={styles.columnMaxHeight}>
           <Dropdown
             placeholder="Select an option"
             label="Pickup Type"
@@ -400,30 +419,35 @@ export default function TaxiRequest() {
             }}
             errorMessage={errors.PickupType as string}
           />
-          <Dropdown
-            placeholder="Select an option"
-            label="Car Type"
-            required
-            // name="CarModel"
-            options={carModelOptions}
-            selectedKey={[values.CarModel as string].filter(Boolean)}
-            onChange={(e, option) => {
-              setFieldValue('CarModel', option.key);
-              if(option.key==='innova crysta' || option.key==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
-            }}
-            errorMessage={errors.CarModel as string}
-          />
-          <TextField
-            label="Pickup Location"
-            required
-            name="PickupLocation"
-            value={values.PickupLocation as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('PickupLocation', v);
-            }}
-            errorMessage={errors.PickupLocation as string}
-          />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <Dropdown
+              placeholder="Select an option"
+              label="Car Type"
+              required
+              // name="CarModel"
+              options={carModelOptions}
+              selectedKey={[values.CarModel as string].filter(Boolean)}
+              onChange={(e, option) => {
+                setFieldValue('CarModel', option.key);
+                if(option.key==='innova crysta' || option.key==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
+              }}
+              errorMessage={errors.CarModel as string}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Pickup Location"
+              required
+              name="PickupLocation"
+              value={values.PickupLocation as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('PickupLocation', v);
+              }}
+              errorMessage={errors.PickupLocation as string}
+            />
+          </div>
           <Stack
             styles={{ root: { width: 300 } }}
             horizontal
@@ -452,7 +476,8 @@ export default function TaxiRequest() {
           </Stack>
         </Stack>
         <Stack {...columnProps}>
-        <TextField
+        <div className={styles.columnMaxHeight}>
+          <TextField
             label="Rental City"
             name="RentalCity"
             value={values.RentalCity as string}
@@ -462,6 +487,8 @@ export default function TaxiRequest() {
             }}
             errorMessage={errors.RentalCity as string}
           />
+        </div>
+        <div className={styles.columnMaxHeight}>
           <TextField
             label="Justification"
             name="Justification"
@@ -473,6 +500,8 @@ export default function TaxiRequest() {
             }}
             errorMessage={errors.Justification as string}
           />
+          </div>
+          <div className={styles.columnMaxHeight}>
           <TextField
             label="Drop Location"
             name="DropLocation"
@@ -483,6 +512,7 @@ export default function TaxiRequest() {
             }}
             errorMessage={errors.DropLocation as string}
           />
+          </div>
           <Stack
             styles={{ root: { width: 300 } }}
             horizontal
@@ -529,21 +559,22 @@ export default function TaxiRequest() {
       <Stack
         enableScopedSelectors
         horizontalAlign="end"
-        style={{ paddingRight: 100, marginTop: 40, marginBottom: 20 }}
+        style={{ width: '650px', marginTop: 40, marginBottom: 20 }}
         horizontal
       >
-
-        {showAlert && (
-          <MessageBar
-            delayedRender={false}
-            // Setting this to error, blocked, or severeWarning automatically sets the role to "alert"
-            messageBarType={MessageBarType.error}
-          // Or you could set the role manually, IF an alert role is appropriate for the message
-          // role="alert"
-          >
-            please check Pickup date & time and Drop Date & time
-          </MessageBar>
-        )}
+        <Stack {...singleColumnProps} style={{ marginRight: 20 }}>
+          {showAlert && (
+            <MessageBar
+              delayedRender={false}
+              // Setting this to error, blocked, or severeWarning automatically sets the role to "alert"
+              messageBarType={MessageBarType.error}
+            // Or you could set the role manually, IF an alert role is appropriate for the message
+            // role="alert"
+            >
+              please check Pickup date & time and Drop Date & time
+            </MessageBar>
+          )}
+        </Stack>
         <PrimaryButton
           text="Submit"
           allowDisabledFocus
