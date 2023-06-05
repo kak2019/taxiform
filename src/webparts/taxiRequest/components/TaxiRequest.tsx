@@ -71,7 +71,9 @@ export default function TaxiRequest() {
     const requestorData = await requestor.select("Title")();
 
     const manager: ISiteUser = sp.web.getUserById(profile.ManagerId);
+    const Approver: ISiteUser = sp.web.getUserById(profile.ApproverId);
     const managerData = await manager();
+    const ApproverData = await Approver();
 
     setFieldsValue({
       Requestor: requestorData.Title,
@@ -93,11 +95,11 @@ export default function TaxiRequest() {
       DropDate: profile.field_14 ? new Date(profile.field_14.replace('Z', '')) : '',
       DropTime: profile.field_14 ? new Date(profile.field_14.replace('Z', '')) : '',
       AdditionalInstructions: profile.field_20,
-      Approver: profile.ApproverId,
-      Manager: {
-        LoginName: managerData.LoginName
-      },
-      ManagerId: profile.ManagerId
+      //Approver: profile.ApproverId,
+      Manager: managerData,
+      ManagerId: profile.ManagerId,
+      Approver:ApproverData,
+      ApproverId:profile.ApproverId
     })
   };
 
@@ -283,7 +285,9 @@ export default function TaxiRequest() {
             errorMessage={errors.Designation as string}
           />
           <PeoplePicker
-            defaultValue={values.Manager}
+            key={values.ManagerId}
+            defaultValue={values.ManagerId}
+            defaultText={values.Manager && values.Manager.Title}
             onChange={(v: any) => {
               setFieldValue('Manager', v);
             }}
@@ -295,13 +299,14 @@ export default function TaxiRequest() {
 
           {/* 这个得是 people picker */}
           <PeoplePicker
-            value={values.Approver}
-            defaultValue={values.Approver}
+            key={values.ApproverId}
+            defaultValue={values.ApproverId}
+            defaultText={values.Approver && values.Approver.Title}
             onChange={(v: any) => {
               setFieldValue('Approver', v);
             }}
             required
-            errorMessage={errors.ApprovedBy as string}
+            errorMessage={errors.Approved as string}
             // name="ApprovedBy "
             label="Approver"
           />
