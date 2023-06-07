@@ -47,7 +47,7 @@ const singleColumnProps: Partial<IStackProps> = {
 
 export default function TaxiRequest() {
   const formRef = React.useRef();
-  const [{ ID }] = useUrlQueryParam(['ID'])
+  const [{ ITEMID }] = useUrlQueryParam(['ITEMID'])
   const { fetchData } = useProfile();
   const {
     values,
@@ -60,10 +60,11 @@ export default function TaxiRequest() {
   const [showAlert, toggleShowAlert] = React.useState(false);
   const [alternateValue, setalternateValue] = React.useState(false);
   const [justificationRequired,setjustificationRequired] = React.useState(false);
+  const [WaringMessage,setWaringMessage ] = React.useState("")
   const init = async () => {
     // EDIT TODO
-    console.log(ID)
-    const profile: any = await fetchById({ Id: Number(ID) });
+    console.log(ITEMID)
+    const profile: any = await fetchById({ Id: Number(ITEMID) });
     if (typeof profile === 'string') {
       throw console.log(profile)
     }
@@ -73,10 +74,17 @@ export default function TaxiRequest() {
     const requestorData = await requestor.select("Title")();
 
     const manager: ISiteUser = sp.web.getUserById(profile.ManagerId);
-    const Approver: ISiteUser = sp.web.getUserById(profile.ApproverId);
     const managerData = await manager();
-    const ApproverData = await Approver();
-
+    if(profile?.ApproverId!==null){
+      const Approver: ISiteUser = sp.web.getUserById(profile?.ApproverId);
+      const ApproverData = await Approver();
+      setFieldsValue({
+        Approver: ApproverData,
+        ApproverId: profile.ApproverId})
+    }
+    
+    
+    
     setFieldsValue({
       Requestor: requestorData.Title,
       Email: profile.field_3,
@@ -89,19 +97,19 @@ export default function TaxiRequest() {
       RentalCity: profile.field_8,
       CarModel: profile.field_10,
       PickupLocation: profile.field_12,
-      PickerupDate: profile.field_13 ? new Date(profile.field_13.replace('Z', '')) : '',
-      PickerupTime: profile.field_13 ? new Date(profile.field_13.replace('Z', '')) : '',
+      PickerupDate: profile.field_13 ? new Date(profile.field_13) : '',
+      PickerupTime: profile.field_13 ? new Date(profile.field_13) : '',
       PickupType: profile.field_9,
       Justification: profile.field_11,
       DropLocation: profile.field_18,
-      DropDate: profile.field_14 ? new Date(profile.field_14.replace('Z', '')) : '',
-      DropTime: profile.field_14 ? new Date(profile.field_14.replace('Z', '')) : '',
+      DropDate: profile.field_14 ? new Date(profile.field_14) : '',
+      DropTime: profile.field_14 ? new Date(profile.field_14) : '',
       AdditionalInstructions: profile.field_20,
       //Approver: profile.ApproverId,
       Manager: managerData,
       ManagerId: profile.ManagerId,
-      Approver: ApproverData,
-      ApproverId: profile.ApproverId
+      //Approver: ApproverData,
+      //ApproverId: profile.ApproverId
     });
     setalternateValue(profile.AlternateApprover);
     if(profile.field_10==='innova crysta' || profile.field_10==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
@@ -126,13 +134,18 @@ export default function TaxiRequest() {
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
 
 
-        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop > 3 && dffHoursPickerup > 3)) {
-          return toggleShowAlert(false)
-        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop > 24 && dffHoursPickerup > 24)) {
-          return toggleShowAlert(false)
+        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop >= 3 && dffHoursPickerup >= 3)) {
+          setWaringMessage("")
+          toggleShowAlert(false) 
+        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop >= 24 && dffHoursPickerup >= 24)) {
+          setWaringMessage("")
+          toggleShowAlert(false)
         }
         else {
-          toggleShowAlert(true)
+          
+          if(values.PickupType === "local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
+          if(values.PickupType === "Outstation"){setWaringMessage("Four outstation pick up, please book 24 hours in advance.")}
+          return toggleShowAlert(true)
         }
         //const request = formToServer(values);
         //const user = await spfi(getSP()).web.siteUsers.getByEmail("group.spah.flow.mgmt@udtrucks.com")();
@@ -142,15 +155,16 @@ export default function TaxiRequest() {
         const resultManager: IWebEnsureUserResult = await sp.web.ensureUser(values.Manager.LoginName);
 
 
-        const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
+        
         console.log(values.PickerupDate)
         console.log(values.PickerupTime)
         //console.log(resultApprover)
         //假设有Approver
         let request = {};
-        if (alternateValue) {
+        if (alternateValue&&!showAlert) {
+          const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
           request = {
-            ID:ID,
+            ID:ITEMID,
             field_3: values.Email,
             Requester_x002a_Id: result.data.Id,
             //
@@ -159,7 +173,7 @@ export default function TaxiRequest() {
             //Gender
             field_6: values.Gender,
             //AlternateApprover
-            AlternateApprover: values.Alternate,
+            AlternateApprover: alternateValue,
             //Paymode
             field_16: values.Paymode,
             //Email
@@ -176,7 +190,7 @@ export default function TaxiRequest() {
             //PickupLocation
             field_12: values.PickupLocation,
             //PickerupDate + time
-            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss') + "Z",
+            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss'),
             //PickerupTime: undefined, 页面是两个 需要提交到一个框
             //PickupType
             field_9: values.PickupType,
@@ -185,14 +199,14 @@ export default function TaxiRequest() {
             //DropLocation
             field_18: values.DropLocation,
             //DropDate + DropTime
-            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss') + "Z",
+            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss'),
             //DropTime: undefined,
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
-        } else {
+        } else if(!alternateValue&&!showAlert){
           request = {
-            ID:ID,
+            ID:ITEMID,
             field_3: values.Email,
             Requester_x002a_Id: result.data.Id,
             //
@@ -201,7 +215,7 @@ export default function TaxiRequest() {
             //Gender
             field_6: values.Gender,
             //AlternateApprover
-            AlternateApprover: values.Alternate,
+            AlternateApprover: alternateValue,
             //Paymode
             field_16: values.Paymode,
             //Email
@@ -218,7 +232,7 @@ export default function TaxiRequest() {
             //PickupLocation
             field_12: values.PickupLocation,
             //PickerupDate + time
-            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss') + "Z",
+            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss'),
             //PickerupTime: undefined, 页面是两个 需要提交到一个框
             //PickupType
             field_9: values.PickupType,
@@ -227,33 +241,36 @@ export default function TaxiRequest() {
             //DropLocation
             field_18: values.DropLocation,
             //DropDate + DropTime
-            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss') + "Z",
+            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss'),
             //DropTime: undefined,
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
         }
         console.log(request);
-        console.log('submit');
         //if(resultApprover!==undefined){request[ApprovedById]= resultApprover.data.Id }
+        if(request !==null && !showAlert){
+          console.log("request add ")
         editRequest({ request })
           .then(() => {
             //
+            document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-Dev/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
           })
           .catch(() => {
             //
           });
-      })
+      }})
       .catch(() => {
         //
       });
+      
   };
 
   return (
     <form ref={formRef}>
       <section>
-        <h2>[RE India] - Taxi Request - {values.ID} </h2>
-        <br />
+        {/* <h2>[RE India] - Taxi Request - {values.ID} </h2>
+        <br /> */}
         <h3>Requestor Information</h3>
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
@@ -274,8 +291,9 @@ export default function TaxiRequest() {
           <div className={styles.columnMaxHeight}>
             <TextField
               label="Phone Number"
-              type="number"
+              //type="number"
               name="Phone"
+              required
               value={values.Phone as string}
               onChange={(e) => {
                 const v = (e.target as HTMLInputElement).value;
@@ -571,7 +589,7 @@ export default function TaxiRequest() {
             // Or you could set the role manually, IF an alert role is appropriate for the message
             // role="alert"
             >
-              please check Pickup date & time and Drop Date & time
+              {WaringMessage}
             </MessageBar>
           )}
         </Stack>

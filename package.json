@@ -10,7 +10,7 @@
     "serve": "gulp bundle --custom-serve --max_old_space_size=4096 && fast-serve"
   },
   "dependencies": {
-    "@fluentui/react": "^8.109.8",
+    "@fluentui/react": "^8.110.0",
     "@microsoft/sp-core-library": "1.15.2",
     "@microsoft/sp-lodash-subset": "1.15.2",
     "@microsoft/sp-office-ui-fabric-core": "1.15.2",

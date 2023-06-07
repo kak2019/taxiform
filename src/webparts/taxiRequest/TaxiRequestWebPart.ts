@@ -9,17 +9,17 @@ import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { IReadonlyTheme } from '@microsoft/sp-component-base';
 
 import * as strings from 'TaxiRequestWebPartStrings';
-import TaxiRequest from './components/TaxiRequest';
 import { ITaxiRequestProps } from './components/ITaxiRequestProps';
 import { getSP } from './pnpjsConfig';
-import TaxiRequestNew from './components/TaxiRequestNew';
-import { useUrlQueryParam } from '../../webparts/taxiRequest/hooks/useUrlQueryParam'
-import App from './components/App';
+
 import TaxiRequestMain from './components/TaxiRequestMain';
 export interface ITaxiRequestWebPartProps {
   description: string;
 }
 
+// import { initializeIcons } from '@fluentui/font-icons-mdl2';
+
+// initializeIcons();
 export default class TaxiRequestWebPart extends BaseClientSideWebPart<ITaxiRequestWebPartProps> {
 
   private _isDarkTheme: boolean = false;

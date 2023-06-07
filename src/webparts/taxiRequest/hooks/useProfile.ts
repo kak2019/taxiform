@@ -11,6 +11,7 @@ function useProfile(): { fetchData: () => Promise<any> } {
         const [, , email] = AccountName.split('|');
 
         return {
+          AccountName:AccountName,
           Requestor: DisplayName,
           Designation: JobTitle,
           Email: email,
@@ -23,5 +24,6 @@ function useProfile(): { fetchData: () => Promise<any> } {
 
   return { fetchData };
 }
+
 
 export default useProfile;

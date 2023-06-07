@@ -92,9 +92,7 @@ function useFormControl() {
     if (isEmpty(values.Manager)) {
       _errors['Manager'] = 'Required';
     }
-    if (isEmpty(values.ApprovedBy)) {
-      _errors['ApprovedBy'] = 'Required';
-    }
+  
     if (isEmpty(values.Paymode)) {
       _errors['Paymode'] = 'Required';
     }
@@ -106,6 +104,9 @@ function useFormControl() {
     }
     if (isEmpty(values.PickupLocation)) {
       _errors['PickupLocation'] = 'Required';
+    }
+    if (isEmpty(values.Phone)) {
+      _errors['Phone'] = 'Required';
     }
     if(isEmpty(values.Justification)&&(values.CarModel==='innova crysta' || values.CarModel==='premium cars')){
       _errors['Justification'] = 'Required';

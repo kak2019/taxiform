@@ -1,7 +1,7 @@
 import { spfi } from '@pnp/sp';
 import { getSP } from '../pnpjsConfig';
 
-const REQUESTSCONST = { LIST_NAME: '[RE]India Taxi Request' };
+const REQUESTSCONST = { LIST_NAME: '[RE]India Taxi Request'};
 
 const fetchById = async (arg: {
   Id: number;
