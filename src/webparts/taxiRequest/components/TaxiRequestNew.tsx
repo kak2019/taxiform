@@ -198,7 +198,7 @@ export default function TaxiRequestNew() {
         console.log(showAlert + "showalert")
         //假设有Approver
         let request = {};
-        if (alternateValue && !showAlert) {
+        if (alternateValue) {
           const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
           request = {
             field_3: values.Email,
@@ -226,7 +226,7 @@ export default function TaxiRequestNew() {
             //PickupLocation
             field_12: values.PickupLocation,
             //PickerupDate + time
-            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss'),
+            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + " " + dayjs(values.PickerupTime).format('HH:mm:ss'),
             //PickerupTime: undefined, 页面是两个 需要提交到一个框
             //PickupType
             field_9: values.PickupType,
@@ -235,12 +235,12 @@ export default function TaxiRequestNew() {
             //DropLocation
             field_18: values.DropLocation,
             //DropDate + DropTime
-            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss'),
+            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + " " + dayjs(values.DropTime).format('HH:mm:ss'),
             //DropTime: undefined,
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
-        } else if (!alternateValue && !showAlert) {
+        } else if (!alternateValue) {
           request = {
             field_3: values.Email,
             Requester_x002a_Id: result.data.Id,
@@ -267,7 +267,7 @@ export default function TaxiRequestNew() {
             //PickupLocation
             field_12: values.PickupLocation,
             //PickerupDate + time
-            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + "T" + dayjs(values.PickerupTime).format('HH:mm:ss'),
+            field_13: dayjs(values.PickerupDate).format('YYYY-MM-DD') + " " + dayjs(values.PickerupTime).format('HH:mm:ss'),
             //PickerupTime: undefined, 页面是两个 需要提交到一个框
             //PickupType
             field_9: values.PickupType,
@@ -276,7 +276,7 @@ export default function TaxiRequestNew() {
             //DropLocation
             field_18: values.DropLocation,
             //DropDate + DropTime
-            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + "T" + dayjs(values.DropTime).format('HH:mm:ss'),
+            field_14: dayjs(values.DropDate).format('YYYY-MM-DD') + " " + dayjs(values.DropTime).format('HH:mm:ss'),
             //DropTime: undefined,
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
@@ -285,7 +285,7 @@ export default function TaxiRequestNew() {
         console.log(request);
         console.log(!showAlert)
         //if(resultApprover!==undefined){request[ApprovedById]= resultApprover.data.Id }
-        if (request !== null && !showAlert) {
+        if (request !== null) {
           addRequest({ request })
             .then(() => {
               //
