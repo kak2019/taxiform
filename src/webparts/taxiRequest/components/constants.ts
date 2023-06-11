@@ -4,7 +4,7 @@ export const genderOptions = [
 ];
 
 export const pickupTypeOptions = [
-  { key: 'local(Bangalore)', text: 'local(Bangalore)' },
+  { key: 'Local(Bangalore)', text: 'Local(Bangalore)' },
   { key: 'Outstation', text: 'Outstation' },
 ];
 

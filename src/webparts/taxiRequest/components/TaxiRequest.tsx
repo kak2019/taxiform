@@ -60,7 +60,8 @@ export default function TaxiRequest() {
   const [showAlert, toggleShowAlert] = React.useState(false);
   const [alternateValue, setalternateValue] = React.useState(false);
   const [justificationRequired,setjustificationRequired] = React.useState(false);
-  const [WaringMessage,setWaringMessage ] = React.useState("")
+  const [WaringMessage,setWaringMessage ] = React.useState("");
+  const [FormStatus,setFormStatus] = React.useState("");
   const init = async () => {
     // EDIT TODO
     console.log(ITEMID)
@@ -68,7 +69,8 @@ export default function TaxiRequest() {
     if (typeof profile === 'string') {
       throw console.log(profile)
     }
-    console.log(profile)
+    console.log(profile.Action_x002a_);
+    setFormStatus(profile.Action_x002a_);
     const sp = spfi(getSP());
     const requestor: ISiteUser = sp.web.getUserById(profile.Requester_x002a_Id);
     const requestorData = await requestor.select("Title")();
@@ -133,16 +135,16 @@ export default function TaxiRequest() {
         const vaildpickupbefore = dayjs(pickerupDateTime).isBefore(dayjs(now));
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
         
-        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop >= 3 && dffHoursPickerup >= 3)) {
+        if ((values.PickupType === "Local(Bangalore)" && !vaildpickupbefore  && dffHoursPickerup >= 3)) {
           setWaringMessage("")
           toggleShowAlert(false) 
-        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop >= 24 && dffHoursPickerup >= 24)) {
+        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && dffHoursPickerup >= 24)) {
           setWaringMessage("")
           toggleShowAlert(false)
         }
         else {
           
-          if(values.PickupType === "local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
+          if(values.PickupType === "Local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
           if(values.PickupType === "Outstation"){setWaringMessage("Four outstation pick up, please book 24 hours in advance.")}
           return toggleShowAlert(true)
         }
@@ -253,7 +255,7 @@ export default function TaxiRequest() {
         editRequest({ request })
           .then(() => {
             //
-            document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-Dev/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+            document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
           })
           .catch(() => {
             //
@@ -473,7 +475,7 @@ export default function TaxiRequest() {
             <DatePicker
               style={{ width: 200 }}
               firstDayOfWeek={DayOfWeek.Sunday}
-              label="Pickerup Date"
+              label="Pickup Date"
               // name="PickerupDate"
               value={values.PickerupDate as Date}
               onSelectDate={(date) => {
@@ -482,7 +484,7 @@ export default function TaxiRequest() {
               strings={defaultDatePickerStrings}
             />
             <TimePicker
-              label="Pickerup Time"
+              label="Pickup Time"
               allowFreeform
               value={values.PickerupTime as Date}
               onChange={React.useCallback((e, time) => {
@@ -592,13 +594,16 @@ export default function TaxiRequest() {
             </MessageBar>
           )}
         </Stack>
+        
         <PrimaryButton
           text="Submit"
           allowDisabledFocus
           style={{ marginRight: 24 }}
           onClick={handleSubmit}
+          disabled={(FormStatus==="New"||FormStatus==="Under Review"||FormStatus==="Cancel"||FormStatus==="Approved")}
         />
         <DefaultButton text="Cancel" allowDisabledFocus />
+       
       </Stack>
     </form>
   );

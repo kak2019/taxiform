@@ -34,6 +34,8 @@ import * as dayjs from 'dayjs';
 import { useUrlQueryParam } from '../hooks/useUrlQueryParam'
 import { ISiteUser } from "@pnp/sp/site-users/";
 import useProfileManager from '../hooks/useManager';
+
+const format = 'HH:mm';
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
@@ -168,16 +170,16 @@ export default function TaxiRequestNew() {
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
 
         
-        if ((values.PickupType === "local(Bangalore)" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop >= 3 && dffHoursPickerup >= 3)) {
+        if ((values.PickupType === "Local(Bangalore)" && !vaildpickupbefore  && dffHoursPickerup >= 3)) {
           setWaringMessage("")
           toggleShowAlert(false) 
-        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && !vailddropbefore && diffHoursDrop >= 24 && dffHoursPickerup >= 24)) {
+        } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && dffHoursPickerup >= 24)) {
           setWaringMessage("")
           toggleShowAlert(false)
         }
         else {
           
-          if(values.PickupType === "local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
+          if(values.PickupType === "Local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
           if(values.PickupType === "Outstation"){setWaringMessage("Four outstation pick up, please book 24 hours in advance.")}
           return toggleShowAlert(true)
         }
@@ -290,7 +292,7 @@ export default function TaxiRequestNew() {
             .then(() => {
               //
               const returnUrl = window.location.href
-              document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-Dev/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+              document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
               //document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/"
             })
             .catch(() => {
@@ -469,7 +471,7 @@ export default function TaxiRequestNew() {
               selectedKey={[values.PickupType as string].filter(Boolean)}
               onChange={(e, option) => {
                 setFieldValue('PickupType', option.key);
-                if (option.key === "local(Bangalore)") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
+                if (option.key === "Local(Bangalore)") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
               }}
               errorMessage={errors.PickupType as string}
             />
@@ -511,7 +513,7 @@ export default function TaxiRequestNew() {
             <DatePicker
               style={{ width: 200 }}
               firstDayOfWeek={DayOfWeek.Sunday}
-              label="Pickerup Date"
+              label="Pickup Date"
               // name="PickerupDate"
               value={values.PickerupDate as Date}
               onSelectDate={(date) => {
@@ -520,14 +522,17 @@ export default function TaxiRequestNew() {
               strings={defaultDatePickerStrings}
             />
             <TimePicker
-              label="Pickerup Time"
+              label="Pickup Time"
               allowFreeform
-              value={values.PickerupTime as Date}
+              //value={values.PickerupTime as Date}
               onChange={React.useCallback((e, time) => {
+                console.log(time)
+                
                 setFieldValue('PickerupTime', time);
               }, [])}
               style={{ width: 200 }}
             />
+            {/* <TimePicker defaultValue={dayjs('12:08', format)} format={format} /> */}
           </Stack>
         </Stack>
         <Stack {...columnProps}>
@@ -583,14 +588,14 @@ export default function TaxiRequestNew() {
               // name="DropDate"
               strings={defaultDatePickerStrings}
             />
-            <TimePicker
+            {/* <TimePicker
               label="Drop Time"
               style={{ width: 200 }}
               value={values.DropTime as Date}
               onChange={(e, time) => {
                 setFieldValue('DropTime', time);
               }}
-            />
+            /> */}
           </Stack>
         </Stack>
       </Stack>
