@@ -65,7 +65,7 @@ export default function TaxiRequestNew() {
   const [showAlert, toggleShowAlert] = React.useState(false);
   const [justificationRequired, setjustificationRequired] = React.useState(false);
   const [alternateValue, setalternateValue] = React.useState(false);
-  const [WaringMessage,setWaringMessage ] = React.useState("")
+  const [WaringMessage, setWaringMessage] = React.useState("")
   const init = async () => {
     const profile1 = await fetchData();
     const { fetchData1 } = useProfileManager(profile1.AccountName);
@@ -142,7 +142,7 @@ export default function TaxiRequestNew() {
       Justification: null,
       DropLocation: null,
       DropDate: new Date(),
-      DropTime: new Date(),
+      //DropTime: new Date(),
       AdditionalInstructions: null,
       //Approver: profile.ApproverId,
       Manager: Manager,
@@ -169,18 +169,18 @@ export default function TaxiRequestNew() {
         const vaildpickupbefore = dayjs(pickerupDateTime).isBefore(dayjs(now));
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
 
-        
-        if ((values.PickupType === "Local(Bangalore)" && !vaildpickupbefore  && dffHoursPickerup >= 3)) {
+
+        if ((values.PickupType === "Local" && !vaildpickupbefore && dffHoursPickerup >= 3)) {
           setWaringMessage("")
-          toggleShowAlert(false) 
+          toggleShowAlert(false)
         } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && dffHoursPickerup >= 24)) {
           setWaringMessage("")
           toggleShowAlert(false)
         }
         else {
-          
-          if(values.PickupType === "Local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
-          if(values.PickupType === "Outstation"){setWaringMessage("Four outstation pick up, please book 24 hours in advance.")}
+
+          if (values.PickupType === "Local") { setWaringMessage("For local pick up, please book 3 hours in advance.") }
+          if (values.PickupType === "Outstation") { setWaringMessage("Four outstation pick up, please book 24 hours in advance.") }
           return toggleShowAlert(true)
         }
         //const request = formToServer(values);
@@ -292,8 +292,9 @@ export default function TaxiRequestNew() {
             .then(() => {
               //
               const returnUrl = window.location.href
-              document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
-              //document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/"
+              //document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+
+              document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/AllItems.aspx"
             })
             .catch(() => {
               //
@@ -471,7 +472,7 @@ export default function TaxiRequestNew() {
               selectedKey={[values.PickupType as string].filter(Boolean)}
               onChange={(e, option) => {
                 setFieldValue('PickupType', option.key);
-                if (option.key === "Local(Bangalore)") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
+                if (option.key === "Local") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
               }}
               errorMessage={errors.PickupType as string}
             />
@@ -515,6 +516,7 @@ export default function TaxiRequestNew() {
               firstDayOfWeek={DayOfWeek.Sunday}
               label="Pickup Date"
               // name="PickerupDate"
+              //isRequired
               value={values.PickerupDate as Date}
               onSelectDate={(date) => {
                 setFieldValue('PickerupDate', date);
@@ -524,11 +526,14 @@ export default function TaxiRequestNew() {
             <TimePicker
               label="Pickup Time"
               allowFreeform
-              //value={values.PickerupTime as Date}
+              value={values.PickerupTime as Date}
+              //required
               onChange={React.useCallback((e, time) => {
-                console.log(time)
-                
-                setFieldValue('PickerupTime', time);
+
+
+                if (time.toString() === "Invalid Date") { setFieldValue('PickerupTime', new Date()) } else {
+                  setFieldValue('PickerupTime', time);
+                }
               }, [])}
               style={{ width: 200 }}
             />
@@ -581,6 +586,7 @@ export default function TaxiRequestNew() {
               style={{ width: 200 }}
               firstDayOfWeek={DayOfWeek.Sunday}
               label="Drop Date"
+              //isRequired
               value={values.DropDate as Date}
               onSelectDate={(date) => {
                 setFieldValue('DropDate', date);
@@ -588,14 +594,17 @@ export default function TaxiRequestNew() {
               // name="DropDate"
               strings={defaultDatePickerStrings}
             />
-            {/* <TimePicker
+            <TimePicker
               label="Drop Time"
               style={{ width: 200 }}
-              value={values.DropTime as Date}
+              //value={values.DropTime as Date}
               onChange={(e, time) => {
-                setFieldValue('DropTime', time);
+                if (time.toString() === "Invalid Date") { setFieldValue('DropTime', new Date()) } else {
+                  setFieldValue('DropTime', time);
+                }
+
               }}
-            /> */}
+            />
           </Stack>
         </Stack>
       </Stack>
@@ -631,7 +640,7 @@ export default function TaxiRequestNew() {
             // Or you could set the role manually, IF an alert role is appropriate for the message
             // role="alert"
             >
-             {WaringMessage}
+              {WaringMessage}
             </MessageBar>
           )}
         </Stack>

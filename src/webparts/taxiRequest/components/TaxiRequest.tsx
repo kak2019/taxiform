@@ -135,7 +135,7 @@ export default function TaxiRequest() {
         const vaildpickupbefore = dayjs(pickerupDateTime).isBefore(dayjs(now));
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
         
-        if ((values.PickupType === "Local(Bangalore)" && !vaildpickupbefore  && dffHoursPickerup >= 3)) {
+        if ((values.PickupType === "Local" && !vaildpickupbefore  && dffHoursPickerup >= 3)) {
           setWaringMessage("")
           toggleShowAlert(false) 
         } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && dffHoursPickerup >= 24)) {
@@ -144,7 +144,7 @@ export default function TaxiRequest() {
         }
         else {
           
-          if(values.PickupType === "Local(Bangalore)"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
+          if(values.PickupType === "Local"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
           if(values.PickupType === "Outstation"){setWaringMessage("Four outstation pick up, please book 24 hours in advance.")}
           return toggleShowAlert(true)
         }
@@ -255,7 +255,10 @@ export default function TaxiRequest() {
         editRequest({ request })
           .then(() => {
             //
-            document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+            const returnUrl = window.location.href
+              //document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+              
+              document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/AllItems.aspx"
           })
           .catch(() => {
             //
@@ -435,6 +438,7 @@ export default function TaxiRequest() {
             selectedKey={[values.PickupType as string].filter(Boolean)}
             onChange={(e, option) => {
               setFieldValue('PickupType', option.key);
+              if (option.key === "Local") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
             }}
             errorMessage={errors.PickupType as string}
           />
@@ -477,6 +481,8 @@ export default function TaxiRequest() {
               firstDayOfWeek={DayOfWeek.Sunday}
               label="Pickup Date"
               // name="PickerupDate"
+              //isRequired
+              onBlur={null}
               value={values.PickerupDate as Date}
               onSelectDate={(date) => {
                 setFieldValue('PickerupDate', date);
@@ -486,9 +492,15 @@ export default function TaxiRequest() {
             <TimePicker
               label="Pickup Time"
               allowFreeform
+              //required
               value={values.PickerupTime as Date}
+              onBlur={null}
               onChange={React.useCallback((e, time) => {
-                setFieldValue('PickerupTime', time);
+                // let pattern = "([0-1][0-9])|(2[0-3])):([0-5]?[0-9])";
+                // let str=time.toString();
+                // console.log(time,"------",pattern.match(str));
+                if(time.toString() ==="Invalid Date"){setFieldValue('PickerupTime',new Date())}else{
+                setFieldValue('PickerupTime', time);}
               }, [])}
               style={{ width: 200 }}
             />
@@ -541,6 +553,7 @@ export default function TaxiRequest() {
               style={{ width: 200 }}
               firstDayOfWeek={DayOfWeek.Sunday}
               label="Drop Date"
+              //isRequired
               value={values.DropDate as Date}
               onSelectDate={(date) => {
                 setFieldValue('DropDate', date);
@@ -553,7 +566,9 @@ export default function TaxiRequest() {
               style={{ width: 200 }}
               value={values.DropTime as Date}
               onChange={(e, time) => {
-                setFieldValue('DropTime', time);
+                if(time.toString() ==="Invalid Date"){setFieldValue('DropTime',new Date())}else{
+                  setFieldValue('DropTime', time);}
+                
               }}
             />
           </Stack>
