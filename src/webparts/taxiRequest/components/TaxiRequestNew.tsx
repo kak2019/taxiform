@@ -35,6 +35,11 @@ import { useUrlQueryParam } from '../hooks/useUrlQueryParam'
 import { ISiteUser } from "@pnp/sp/site-users/";
 import useProfileManager from '../hooks/useManager';
 
+function isEmpty(str: unknown) {
+  if (!str) return true;
+  if (typeof str === 'string' && str.trim().length === 0) return true;
+  return false;
+}
 const format = 'HH:mm';
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
@@ -142,7 +147,7 @@ export default function TaxiRequestNew() {
       Justification: null,
       DropLocation: null,
       DropDate: new Date(),
-      //DropTime: new Date(),
+      DropTime: null,
       AdditionalInstructions: null,
       //Approver: profile.ApproverId,
       Manager: Manager,
@@ -150,6 +155,7 @@ export default function TaxiRequestNew() {
       Approver: null,
       ApproverId: null
     })
+    console.log("------------", values.DropTime)
   };
 
   React.useEffect(() => {
@@ -199,7 +205,7 @@ export default function TaxiRequestNew() {
         console.log(alternateValue + "alternate")
         console.log(showAlert + "showalert")
         //假设有Approver
-        let request = {};
+        let request: any = {};
         if (alternateValue) {
           const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
           request = {
@@ -242,6 +248,7 @@ export default function TaxiRequestNew() {
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
+          if (isEmpty(values.DropTime.toString)) { delete request.field_14 }
         } else if (!alternateValue) {
           request = {
             field_3: values.Email,
@@ -283,8 +290,12 @@ export default function TaxiRequestNew() {
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
+          if (isEmpty(values.DropTime)) { delete request.field_14 }
+
         }
         console.log(request);
+        console.log(values.DropTime)
+        console.log("sss", isEmpty(values.DropTime))
         console.log(!showAlert)
         //if(resultApprover!==undefined){request[ApprovedById]= resultApprover.data.Id }
         if (request !== null) {
@@ -312,13 +323,13 @@ export default function TaxiRequestNew() {
       <section>
         {/* <h2>[RE India] - Taxi Request - {values.ID} </h2>
         <br /> */}
-        <h1>Requestor Information</h1>
+        <h1>Requester Information</h1>
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
           <div className={styles.columnMaxHeight}>
             <TextField
-              label="Requestor Name"
+              label="Requester Name"
               required
               name="Requestor"
               value={values.Requestor as string}
@@ -488,7 +499,7 @@ export default function TaxiRequestNew() {
               onChange={(e, option) => {
                 setFieldValue('CarModel', option.key);
                 //回头再优化 
-                if (option.key === 'innova crysta' || option.key === 'premium cars') { setjustificationRequired(true) } else { setjustificationRequired(false) }
+                if (option.key === 'Innova Crysta' || option.key === 'Premium Cars') { setjustificationRequired(true) } else { setjustificationRequired(false) }
               }}
               errorMessage={errors.CarModel as string}
             />
@@ -546,6 +557,7 @@ export default function TaxiRequestNew() {
               label="Rental City"
               name="RentalCity"
               value={values.RentalCity as string}
+              required
               onChange={(e) => {
                 const v = (e.target as HTMLInputElement).value;
                 setFieldValue('RentalCity', v);

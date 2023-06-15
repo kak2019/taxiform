@@ -11,8 +11,8 @@ export const pickupTypeOptions = [
 export const carModelOptions = [
   { key: 'Mini', text: 'Mini' },
   { key: 'Sedan', text: 'Sedan' },
-  { key: 'innova crysta', text: 'innova crysta' },
-  { key: 'premium cars', text: 'premium cars' },
+  { key: 'Innova Crysta', text: 'Innova Crysta' },
+  { key: 'Premium Cars', text: 'Premium Cars' },
 ];
 
 export const payModeOptions = [

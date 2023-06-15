@@ -33,7 +33,13 @@ import { Field } from '@pnp/sp/fields/types';
 import * as dayjs from 'dayjs';
 import { useUrlQueryParam } from '../hooks/useUrlQueryParam'
 import { ISiteUser } from "@pnp/sp/site-users/";
-import TaxiRequestNew from './TaxiRequestNew'
+
+
+function isEmpty(str: unknown) {
+  if (!str) return true;
+  if (typeof str === 'string' && str.trim().length === 0) return true;
+  return false;
+}
 const stackTokens = { childrenGap: 50 };
 const stackStyles: Partial<IStackStyles> = { root: { width: 650 } };
 const columnProps: Partial<IStackProps> = {
@@ -59,9 +65,9 @@ export default function TaxiRequest() {
   } = useFormControl();
   const [showAlert, toggleShowAlert] = React.useState(false);
   const [alternateValue, setalternateValue] = React.useState(false);
-  const [justificationRequired,setjustificationRequired] = React.useState(false);
-  const [WaringMessage,setWaringMessage ] = React.useState("");
-  const [FormStatus,setFormStatus] = React.useState("");
+  const [justificationRequired, setjustificationRequired] = React.useState(false);
+  const [WaringMessage, setWaringMessage] = React.useState("");
+  const [FormStatus, setFormStatus] = React.useState("");
   const init = async () => {
     // EDIT TODO
     console.log(ITEMID)
@@ -77,16 +83,17 @@ export default function TaxiRequest() {
 
     const manager: ISiteUser = sp.web.getUserById(profile.ManagerId);
     const managerData = await manager();
-    if(profile?.ApproverId!==null){
+    if (profile?.ApproverId !== null) {
       const Approver: ISiteUser = sp.web.getUserById(profile?.ApproverId);
       const ApproverData = await Approver();
       setFieldsValue({
         Approver: ApproverData,
-        ApproverId: profile.ApproverId})
+        ApproverId: profile.ApproverId
+      })
     }
-    
-    
-    
+
+
+
     setFieldsValue({
       Requestor: requestorData.Title,
       Email: profile.field_3,
@@ -105,7 +112,7 @@ export default function TaxiRequest() {
       Justification: profile.field_11,
       DropLocation: profile.field_18,
       DropDate: profile.field_14 ? new Date(profile.field_14) : '',
-      DropTime: profile.field_14 ? new Date(profile.field_14) : '',
+      DropTime: profile.field_14 ? new Date(profile.field_14) : null,
       AdditionalInstructions: profile.field_20,
       //Approver: profile.ApproverId,
       Manager: managerData,
@@ -114,8 +121,8 @@ export default function TaxiRequest() {
       //ApproverId: profile.ApproverId
     });
     setalternateValue(profile.AlternateApprover);
-    if(profile.field_10==='innova crysta' || profile.field_10==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
-    
+    if (profile.field_10 === 'Innova Crysta' || profile.field_10 === 'Premium Cars') { setjustificationRequired(true) } else { setjustificationRequired(false) }
+
   };
 
   React.useEffect(() => {
@@ -134,18 +141,18 @@ export default function TaxiRequest() {
         const dffHoursPickerup = Math.abs(dayjs(pickerupDateTime).diff(dayjs(now), 'hour'));
         const vaildpickupbefore = dayjs(pickerupDateTime).isBefore(dayjs(now));
         const vailddropbefore = dayjs(dropDateTime).isBefore(dayjs(now));
-        
-        if ((values.PickupType === "Local" && !vaildpickupbefore  && dffHoursPickerup >= 3)) {
+
+        if ((values.PickupType === "Local" && !vaildpickupbefore && dffHoursPickerup >= 3)) {
           setWaringMessage("")
-          toggleShowAlert(false) 
+          toggleShowAlert(false)
         } else if ((values.PickupType === "Outstation" && !vaildpickupbefore && dffHoursPickerup >= 24)) {
           setWaringMessage("")
           toggleShowAlert(false)
         }
         else {
-          
-          if(values.PickupType === "Local"){ setWaringMessage("For local pick up, please book 3 hours in advance.")}
-          if(values.PickupType === "Outstation"){setWaringMessage("Four outstation pick up, please book 24 hours in advance.")}
+
+          if (values.PickupType === "Local") { setWaringMessage("For local pick up, please book 3 hours in advance.") }
+          if (values.PickupType === "Outstation") { setWaringMessage("Four outstation pick up, please book 24 hours in advance.") }
           return toggleShowAlert(true)
         }
         //const request = formToServer(values);
@@ -156,16 +163,16 @@ export default function TaxiRequest() {
         const resultManager: IWebEnsureUserResult = await sp.web.ensureUser(values.Manager.LoginName);
 
 
-        
+
         console.log(values.PickerupDate)
         console.log(values.PickerupTime)
         //console.log(resultApprover)
         //假设有Approver
-        let request = {};
+        let request: any = {};
         if (alternateValue) {
           const resultApprover: IWebEnsureUserResult = await sp.web.ensureUser(values.Approver?.LoginName);
           request = {
-            ID:ITEMID,
+            ID: ITEMID,
             field_3: values.Email,
             Requester_x002a_Id: result.data.Id,
             //
@@ -205,9 +212,10 @@ export default function TaxiRequest() {
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
-        } else if(!alternateValue){
+          if (isEmpty(values.DropTime)) { delete request.field_14 }
+        } else if (!alternateValue) {
           request = {
-            ID:ITEMID,
+            ID: ITEMID,
             field_3: values.Email,
             Requester_x002a_Id: result.data.Id,
             //
@@ -247,27 +255,29 @@ export default function TaxiRequest() {
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
+          if (isEmpty(values.DropTime)) { delete request.field_14 }
         }
         console.log(request);
         //if(resultApprover!==undefined){request[ApprovedById]= resultApprover.data.Id }
-        if(request !==null){
+        if (request !== null) {
           console.log("request add ")
-        editRequest({ request })
-          .then(() => {
-            //
-            const returnUrl = window.location.href
+          editRequest({ request })
+            .then(() => {
+              //
+              const returnUrl = window.location.href
               //document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
-              
+
               document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/AllItems.aspx"
-          })
-          .catch(() => {
-            //
-          });
-      }})
+            })
+            .catch(() => {
+              //
+            });
+        }
+      })
       .catch(() => {
         //
       });
-      
+
   };
 
   return (
@@ -275,13 +285,13 @@ export default function TaxiRequest() {
       <section>
         {/* <h2>[RE India] - Taxi Request - {values.ID} </h2>
         <br /> */}
-        <h3>Requestor Information</h3>
+        <h3>Requester Information</h3>
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
           <div className={styles.columnMaxHeight}>
             <TextField
-              label="Requestor Name"
+              label="Requester Name"
               required
               name="Requestor"
               value={values.Requestor as string}
@@ -368,47 +378,47 @@ export default function TaxiRequest() {
             />
           </div>
           <div className={styles.columnMaxHeight}>
-          <TextField
-            label="Designation"
-            name="Designation"
-            value={values.Designation as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('Designation', v);
-            }}
-            errorMessage={errors.Designation as string}
-          />
+            <TextField
+              label="Designation"
+              name="Designation"
+              value={values.Designation as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('Designation', v);
+              }}
+              errorMessage={errors.Designation as string}
+            />
           </div>
           <div className={styles.columnMaxHeight}>
-          <PeoplePicker
-            key={values.ManagerId}
-            defaultValue={values.ManagerId}
-            defaultText={values.Manager && values.Manager.Title}
-            onChange={(v: any) => {
-              setFieldValue('Manager', v);
-            }}
-            required
-            label="Manager"
-            errorMessage={errors.Manager as string}
-          // name="Manager"
-          />
+            <PeoplePicker
+              key={values.ManagerId}
+              defaultValue={values.ManagerId}
+              defaultText={values.Manager && values.Manager.Title}
+              onChange={(v: any) => {
+                setFieldValue('Manager', v);
+              }}
+              required
+              label="Manager"
+              errorMessage={errors.Manager as string}
+            // name="Manager"
+            />
           </div>
-            
+
           {/* 这个得是 people picker */}
           <div className={styles.columnMaxHeight}>
-          <PeoplePicker
-            key={values.ApproverId}
-            defaultValue={values.ApproverId}
-            defaultText={values.Approver && values.Approver.Title}
-            onChange={(v: any) => {
-              setFieldValue('Approver', v);
-            }}
-            //required
-            errorMessage={errors.Approved as string}
-            // name="ApprovedBy "
-            label="Approver"
-            required={alternateValue}
-          />
+            <PeoplePicker
+              key={values.ApproverId}
+              defaultValue={values.ApproverId}
+              defaultText={values.Approver && values.Approver.Title}
+              onChange={(v: any) => {
+                setFieldValue('Approver', v);
+              }}
+              //required
+              errorMessage={errors.Approved as string}
+              // name="ApprovedBy "
+              label="Approver"
+              required={alternateValue}
+            />
           </div>
           <div className={styles.columnMaxHeight}>
             <TextField
@@ -428,20 +438,20 @@ export default function TaxiRequest() {
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
-        <div className={styles.columnMaxHeight}>
-          <Dropdown
-            placeholder="Select an option"
-            label="Pickup Type"
-            required
-            // name="PickupType"
-            options={pickupTypeOptions}
-            selectedKey={[values.PickupType as string].filter(Boolean)}
-            onChange={(e, option) => {
-              setFieldValue('PickupType', option.key);
-              if (option.key === "Local") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
-            }}
-            errorMessage={errors.PickupType as string}
-          />
+          <div className={styles.columnMaxHeight}>
+            <Dropdown
+              placeholder="Select an option"
+              label="Pickup Type"
+              required
+              // name="PickupType"
+              options={pickupTypeOptions}
+              selectedKey={[values.PickupType as string].filter(Boolean)}
+              onChange={(e, option) => {
+                setFieldValue('PickupType', option.key);
+                if (option.key === "Local") { setFieldValue("RentalCity", "Bangalore") } else { setFieldValue("RentalCity", null) }
+              }}
+              errorMessage={errors.PickupType as string}
+            />
           </div>
           <div className={styles.columnMaxHeight}>
             <Dropdown
@@ -453,7 +463,7 @@ export default function TaxiRequest() {
               selectedKey={[values.CarModel as string].filter(Boolean)}
               onChange={(e, option) => {
                 setFieldValue('CarModel', option.key);
-                if(option.key==='innova crysta' || option.key==='premium cars'){setjustificationRequired(true)}else{setjustificationRequired(false)}
+                if (option.key === 'Innova Crysta' || option.key === 'Premium Cars') { setjustificationRequired(true) } else { setjustificationRequired(false) }
               }}
               errorMessage={errors.CarModel as string}
             />
@@ -499,50 +509,52 @@ export default function TaxiRequest() {
                 // let pattern = "([0-1][0-9])|(2[0-3])):([0-5]?[0-9])";
                 // let str=time.toString();
                 // console.log(time,"------",pattern.match(str));
-                if(time.toString() ==="Invalid Date"){setFieldValue('PickerupTime',new Date())}else{
-                setFieldValue('PickerupTime', time);}
+                if (time.toString() === "Invalid Date") { setFieldValue('PickerupTime', new Date()) } else {
+                  setFieldValue('PickerupTime', time);
+                }
               }, [])}
               style={{ width: 200 }}
             />
           </Stack>
         </Stack>
         <Stack {...columnProps}>
-        <div className={styles.columnMaxHeight}>
-          <TextField
-            label="Rental City"
-            name="RentalCity"
-            value={values.RentalCity as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('RentalCity', v);
-            }}
-            errorMessage={errors.RentalCity as string}
-          />
-        </div>
-        <div className={styles.columnMaxHeight}>
-          <TextField
-            label="Justification"
-            name="Justification"
-            value={values.Justification as string}
-            required={justificationRequired}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('Justification', v);
-            }}
-            errorMessage={errors.Justification as string}
-          />
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Rental City"
+              name="RentalCity"
+              value={values.RentalCity as string}
+              required
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('RentalCity', v);
+              }}
+              errorMessage={errors.RentalCity as string}
+            />
           </div>
           <div className={styles.columnMaxHeight}>
-          <TextField
-            label="Drop Location"
-            name="DropLocation"
-            value={values.DropLocation as string}
-            onChange={(e) => {
-              const v = (e.target as HTMLInputElement).value;
-              setFieldValue('DropLocation', v);
-            }}
-            errorMessage={errors.DropLocation as string}
-          />
+            <TextField
+              label="Justification"
+              name="Justification"
+              value={values.Justification as string}
+              required={justificationRequired}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('Justification', v);
+              }}
+              errorMessage={errors.Justification as string}
+            />
+          </div>
+          <div className={styles.columnMaxHeight}>
+            <TextField
+              label="Drop Location"
+              name="DropLocation"
+              value={values.DropLocation as string}
+              onChange={(e) => {
+                const v = (e.target as HTMLInputElement).value;
+                setFieldValue('DropLocation', v);
+              }}
+              errorMessage={errors.DropLocation as string}
+            />
           </div>
           <Stack
             styles={{ root: { width: 300 } }}
@@ -566,9 +578,10 @@ export default function TaxiRequest() {
               style={{ width: 200 }}
               value={values.DropTime as Date}
               onChange={(e, time) => {
-                if(time.toString() ==="Invalid Date"){setFieldValue('DropTime',new Date())}else{
-                  setFieldValue('DropTime', time);}
-                
+                if (time.toString() === "Invalid Date") { setFieldValue('DropTime', new Date()) } else {
+                  setFieldValue('DropTime', time);
+                }
+
               }}
             />
           </Stack>
@@ -609,16 +622,16 @@ export default function TaxiRequest() {
             </MessageBar>
           )}
         </Stack>
-        
+
         <PrimaryButton
           text="Submit"
           allowDisabledFocus
           style={{ marginRight: 24 }}
           onClick={handleSubmit}
-          disabled={(FormStatus==="New"||FormStatus==="Under Review"||FormStatus==="Cancel"||FormStatus==="Approved")}
+          disabled={(FormStatus === "New" || FormStatus === "Under Review" || FormStatus === "Cancel" || FormStatus === "Approved")}
         />
         <DefaultButton text="Cancel" allowDisabledFocus />
-       
+
       </Stack>
     </form>
   );
