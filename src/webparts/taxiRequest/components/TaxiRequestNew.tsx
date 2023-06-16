@@ -204,6 +204,7 @@ export default function TaxiRequestNew() {
         //console.log(resultApprover)
         console.log(alternateValue + "alternate")
         console.log(showAlert + "showalert")
+        console.log("al",alternateValue)
         //假设有Approver
         let request: any = {};
         if (alternateValue) {
@@ -248,7 +249,7 @@ export default function TaxiRequestNew() {
             //AdditionalInstructions
             field_20: values.AdditionalInstructions,
           }
-          if (isEmpty(values.DropTime.toString)) { delete request.field_14 }
+          if (isEmpty(values.DropTime)) { delete request.field_14 }
         } else if (!alternateValue) {
           request = {
             field_3: values.Email,
