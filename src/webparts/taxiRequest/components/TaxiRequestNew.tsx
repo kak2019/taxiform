@@ -186,7 +186,7 @@ export default function TaxiRequestNew() {
         else {
 
           if (values.PickupType === "Local") { setWaringMessage("For local pick up, please book 3 hours in advance.") }
-          if (values.PickupType === "Outstation") { setWaringMessage("Four outstation pick up, please book 24 hours in advance.") }
+          if (values.PickupType === "Outstation") { setWaringMessage("For outstation pick up, please book 24 hours in advance.") }
           return toggleShowAlert(true)
         }
         //const request = formToServer(values);
@@ -204,7 +204,7 @@ export default function TaxiRequestNew() {
         //console.log(resultApprover)
         console.log(alternateValue + "alternate")
         console.log(showAlert + "showalert")
-        console.log("al",alternateValue)
+        console.log("al", alternateValue)
         //假设有Approver
         let request: any = {};
         if (alternateValue) {
@@ -663,7 +663,12 @@ export default function TaxiRequestNew() {
           style={{ marginRight: 24 }}
           onClick={handleSubmit}
         />
-        <DefaultButton text="Cancel" allowDisabledFocus />
+        <DefaultButton text="Cancel" allowDisabledFocus onClick={() => {
+          const returnUrl = window.location.href
+          //document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+
+          document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+        }} />
       </Stack>
     </form>
   );
