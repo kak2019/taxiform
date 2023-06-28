@@ -267,7 +267,7 @@ export default function TaxiRequest() {
               const returnUrl = window.location.href
               //document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
 
-              document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+              document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/My%20Request.aspx"
             })
             .catch(() => {
               //
@@ -282,10 +282,10 @@ export default function TaxiRequest() {
 
   return (
     <form ref={formRef}>
-      <section>
+   <section>
         {/* <h2>[RE India] - Taxi Request - {values.ID} </h2>
         <br /> */}
-        <h3>Requester Information</h3>
+        <h2>Requester Information</h2>
       </section>
       <Stack horizontal tokens={stackTokens} styles={stackStyles}>
         <Stack {...columnProps}>
@@ -634,7 +634,7 @@ export default function TaxiRequest() {
           const returnUrl = window.location.href
           //document.location.href = "https://udtrucks.sharepoint.com/sites/app-RealEstateServiceDesk-QA/Lists/REIndia%20Taxi%20Request/AllItems.aspx"
 
-          document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/AllItems.aspx"
+          document.location.href = returnUrl.slice(0, returnUrl.indexOf("SitePage")) + "Lists/REIndia%20Taxi%20Request/My%20Request.aspx"
         }}/>
 
       </Stack>
